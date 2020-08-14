@@ -1,7 +1,7 @@
 package node
 
-// #cgo CFLAGS: -I/opt/ros/bouncy/include
-// #cgo LDFLAGS: -L/opt/ros/bouncy/lib -lrcl -lrcutils
+// #cgo CFLAGS: -I/opt/ros/dashing/include
+// #cgo LDFLAGS: -L/opt/ros/dashing/lib -lrcl -lrcutils
 // #include "rcl/rcl.h"
 // #include "rcl/node.h"
 import "C"

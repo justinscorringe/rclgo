@@ -1,8 +1,8 @@
 # Starting from golang image
 FROM golang:latest as go-docker
 
-# Our final image should have ros:bouncy already installed
-FROM ros:bouncy
+# Our final image should have ros:dashing already installed
+FROM ros:dashing
 
 # Get the binaries from previous docker stage:
 COPY --from=go-docker /usr/local/go /usr/local/go

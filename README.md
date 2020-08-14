@@ -30,10 +30,10 @@ ros2 topic list
 
 ## Pre-requisites
 
-cgo is used for the library wrapping. Temporarly, it is assumed that you have ros bouncy installed in:
+cgo is used for the library wrapping. Temporarly, it is assumed that you have ros dashing installed in:
 
 ```
-/opt/ros/bouncy
+/opt/ros/dashing
 ```
 
 This is a temporarly solution and it will be changed in the future. A more elegant solution would be to use an enviromental variable to point the library to the proper location.
