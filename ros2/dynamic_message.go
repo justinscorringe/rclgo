@@ -2,12 +2,18 @@ package ros2
 
 // IMPORT REQUIRED PACKAGES.
 
+// #cgo CFLAGS: -I/opt/ros/dashing/include
+// #cgo LDFLAGS: -L/opt/ros/dashing/lib -Wl,-rpath=/opt/ros/dashing/lib -lrcl -lrosidl_generator_c -lrosidl_typesupport_c -lstd_msgs__rosidl_generator_c -lstd_msgs__rosidl_typesupport_c
+// #include "msg_types.h"
+import "C"
+
 import (
 	"encoding/base64"
 	"encoding/json"
 	"os"
 	"strconv"
 	"strings"
+	"unsafe"
 
 	"github.com/buger/jsonparser"
 	"github.com/justinscorringe/rclgo/libtypes"
@@ -22,8 +28,6 @@ type DynamicMessageType struct {
 }
 
 type DynamicMessage struct {
-	MessageBase
-
 	dynamicType *DynamicMessageType
 	data        map[string]interface{}
 }
@@ -140,7 +144,31 @@ func (t *DynamicMessageType) Text() string {
 	return t.spec.Text
 }
 
-func (t *DynamicMessageType) NewMessage()
+func (t *DynamicMessageType) NewMessage() Message {
+	// Don't instantiate messages for incomplete types.
+	if t.spec == nil {
+		return nil
+	}
+	// But otherwise, make a new one.
+	d := new(DynamicMessage)
+	d.dynamicType = t
+	var err error
+	d.data, err = zeroValueData(t.Name())
+	if err != nil {
+		return nil
+	}
+	return d
+}
+
+func (t *DynamicMessageType) RosType() *ROSIdlMessageTypeSupport {
+	var ret *C.rosidl_message_type_support_t = C.get_message_type_from_std_msgs_msg_String()
+	return (*ROSIdlMessageTypeSupport)(ret)
+}
+
+func (t *DynamicMessageType) RosInfo() *RmwMessageInfo {
+	// Hardcoded to one type right now
+	return &RmwMessageInfo{}
+}
 
 // GenerateJSONSchema generates a (primitive) JSON schema for the associated DynamicMessageType; however note that since
 // we are mostly interested in making schema's for particular _topics_, the function takes a string prefix, and string topic name, which are
@@ -308,6 +336,16 @@ func (t *DynamicMessageType) generateJSONSchemaProperties(topic string) (map[str
 // Data returns the data map field of the DynamicMessage
 func (m *DynamicMessage) Data() map[string]interface{} {
 	return m.data
+}
+
+// Data returns the data map field of the DynamicMessage
+func (m *DynamicMessage) Type() MessageType {
+	return m.dynamicType
+}
+
+// Data returns the data pointer of the ros C message
+func (m *DynamicMessage) RosData() unsafe.Pointer {
+	return nil
 }
 
 // MarshalJSON provides a custom implementation of JSON marshalling, so that when the DynamicMessage is recursively
@@ -617,6 +655,153 @@ func (m *DynamicMessage) UnmarshalJSON(buf []byte) error {
 	//Perform JSON object handler function
 	err = jsonparser.ObjectEach(buf, objectHandler)
 	return err
+}
+
+// zeroValueData creates the zeroValue (default) data map for a new dynamic message
+func zeroValueData(s string) (map[string]interface{}, error) {
+	//Create map
+	d := make(map[string]interface{})
+
+	//Instantiate new dynamic message type from string name parsed
+	t, err := NewDynamicMessageType(s)
+	if err != nil {
+		return d, errors.Wrap(err, "Failed to create NewDynamicMessageType "+s)
+	}
+	//Range fields in the dynamic message type
+	for _, field := range t.spec.Fields {
+		if field.IsArray {
+			//It's an array. Create empty Slices
+			switch field.GoType {
+			case "bool":
+				d[field.Name] = make([]bool, 0)
+			case "int8":
+				d[field.Name] = make([]int8, 0)
+			case "int16":
+				d[field.Name] = make([]int16, 0)
+			case "int32":
+				d[field.Name] = make([]int32, 0)
+			case "int64":
+				d[field.Name] = make([]int64, 0)
+			case "uint8":
+				d[field.Name] = make([]uint8, 0)
+			case "uint16":
+				d[field.Name] = make([]uint16, 0)
+			case "uint32":
+				d[field.Name] = make([]uint32, 0)
+			case "uint64":
+				d[field.Name] = make([]uint64, 0)
+			case "float32":
+				d[field.Name] = make([]JsonFloat32, 0)
+			case "float64":
+				d[field.Name] = make([]JsonFloat64, 0)
+			case "string":
+				d[field.Name] = make([]string, 0)
+			case "ros.Time":
+				d[field.Name] = make([]Time, 0)
+			case "ros.Duration":
+				d[field.Name] = make([]Duration, 0)
+			default:
+				// In this case, it will probably be because the go_type is describing another ROS message, so we need to replace that with a nested DynamicMessage.
+				d[field.Name] = make([]Message, 0)
+			}
+			var size uint32 = uint32(field.ArrayLen)
+			//In the case the array length is static, we iterated through array items
+			if field.ArrayLen != -1 {
+				for i := 0; i < int(size); i++ {
+					if field.IsBuiltin {
+						//Append the goType zeroValues to their arrays
+						switch field.GoType {
+						case "bool":
+							d[field.Name] = append(d[field.Name].([]bool), false)
+						case "int8":
+							d[field.Name] = append(d[field.Name].([]int8), 0)
+						case "int16":
+							d[field.Name] = append(d[field.Name].([]int16), 0)
+						case "int32":
+							d[field.Name] = append(d[field.Name].([]int32), 0)
+						case "int64":
+							d[field.Name] = append(d[field.Name].([]int64), 0)
+						case "uint8":
+							d[field.Name] = append(d[field.Name].([]uint8), 0)
+						case "uint16":
+							d[field.Name] = append(d[field.Name].([]uint16), 0)
+						case "uint32":
+							d[field.Name] = append(d[field.Name].([]uint32), 0)
+						case "uint64":
+							d[field.Name] = append(d[field.Name].([]uint64), 0)
+						case "float32":
+							d[field.Name] = append(d[field.Name].([]JsonFloat32), JsonFloat32{F: 0.0})
+						case "float64":
+							d[field.Name] = append(d[field.Name].([]JsonFloat64), JsonFloat64{F: 0.0})
+						case "string":
+							d[field.Name] = append(d[field.Name].([]string), "")
+						case "ros.Time":
+							d[field.Name] = append(d[field.Name].([]Time), Time{})
+						case "ros.Duration":
+							d[field.Name] = append(d[field.Name].([]Duration), Duration{})
+						default:
+							// Something went wrong.
+							return d, errors.Wrap(err, "Builtin field "+field.GoType+" not found")
+						}
+					} else {
+						// Else it's not a builtin. Create a nested message type for values inside
+						t2, err := newDynamicMessageTypeNested(field.Type, field.Package)
+						if err != nil {
+							return d, errors.Wrap(err, "Failed to create newDynamicMessageTypeNested "+field.Type)
+						}
+						msg := t2.NewMessage()
+						//Append nested message map to message type array in main map
+						d[field.Name] = append(d[field.Name].([]Message), msg)
+					}
+					//Else array is dynamic, by default we do not initialize any values in it
+				}
+			}
+		} else if field.IsBuiltin {
+			//If its a built in type
+			switch field.GoType {
+			case "string":
+				d[field.Name] = ""
+			case "bool":
+				d[field.Name] = bool(false)
+			case "int8":
+				d[field.Name] = int8(0)
+			case "int16":
+				d[field.Name] = int16(0)
+			case "int32":
+				d[field.Name] = int32(0)
+			case "int64":
+				d[field.Name] = int64(0)
+			case "uint8":
+				d[field.Name] = uint8(0)
+			case "uint16":
+				d[field.Name] = uint16(0)
+			case "uint32":
+				d[field.Name] = uint32(0)
+			case "uint64":
+				d[field.Name] = uint64(0)
+			case "float32":
+				d[field.Name] = JsonFloat32{F: float32(0.0)}
+			case "float64":
+				d[field.Name] = JsonFloat64{F: float64(0.0)}
+			case "ros.Time":
+				d[field.Name] = Time{}
+			case "ros.Duration":
+				d[field.Name] = Duration{}
+			default:
+				return d, errors.Wrap(err, "Builtin field "+field.GoType+" not found")
+			}
+			//Else its a ros message type
+		} else {
+			//Create new dynamic message type nested
+			t2, err := newDynamicMessageTypeNested(field.Type, field.Package)
+			if err != nil {
+				return d, errors.Wrap(err, "Failed to create dewDynamicMessageTypeNested "+field.Type)
+			}
+			//Append message as a map item
+			d[field.Name] = t2.NewMessage()
+		}
+	}
+	return d, err
 }
 
 // DEFINE PRIVATE STATIC FUNCTIONS.

@@ -8,8 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/justinscorringe/rclgo"
-	"github.com/justinscorringe/rclgo/types"
+	rclgo "github.com/justinscorringe/rclgo/ros2"
 )
 
 func main() {
@@ -17,14 +16,14 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	msg := make(chan string, 1)
+	msgChan := make(chan string, 1)
 	go func() {
 		// Receive input in a loop
 		for {
 			var s string
 			fmt.Scan(&s)
 			// Send what we read over the channel
-			msg <- s
+			msgChan <- s
 		}
 	}()
 	// Initialization
@@ -47,49 +46,57 @@ func main() {
 	mySubOpts := rclgo.NewSubscriptionDefaultOptions()
 
 	//Creating the type
-	msgType := rclgo.NewDynamicMessageType("std_msgs/String")
+	msgType, err := rclgo.NewDynamicMessageType("std_msgs/String")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	fmt.Printf("Creating the subscriber! \n")
-	err = mySub.Init(mySubOpts, myNode, "/myGoTopic", msgType.cSpec)
+	err = mySub.Init(mySubOpts, myNode, "/myGoTopic", msgType)
 	if err != nil {
 		log.Fatalf("SubscriptionsInit: %s", err)
 	}
 
-	//Creating the msg type
-	var myMsg types.GeometryMsgsTwist
-	myMsg.InitMessage()
+	// //Creating the msg type
+	// var myMsg types.GeometryMsgsTwist
+	// myMsg.InitMessage()
 
 	time.Sleep(100 * time.Millisecond)
+	i := 0
 
 loop:
 	for {
 		fmt.Println("Subscriber run loop!")
-		err = mySub.TakeMessage(&myMsg.MsgInfo, myMsg.Data())
+		msg, err := mySub.TakeMessageSerialized(msgType)
 		if err == nil {
-			fmt.Printf("(Suscriber) Received %v\n", myMsg.GetDataMap())
+			fmt.Printf("(Suscriber) Received %v\n", msg)
+			i = 0
 		} else {
 			fmt.Print(err)
 			time.Sleep(100 * time.Millisecond)
+			if i > 10 {
+				log.Fatal("dead")
+			}
+			i++
 			goto loop
 		}
 
 		time.Sleep(100 * time.Millisecond)
+
 		select {
 		case <-sigs:
 			fmt.Println("Got shutdown, exiting")
 			break loop
-		case <-msg:
+		case <-msgChan:
 		}
 	}
 
 	fmt.Printf("Shutting down!! \n")
 
-	myMsg.DestroyMessage()
 	err = mySub.SubscriptionFini(myNode)
 	if err != nil {
 		log.Fatalf("SubscriptionFini: %s", err)
 	}
-
 	err = myNode.Fini()
 	if err != nil {
 		log.Fatalf("NodeFini: %s", err)

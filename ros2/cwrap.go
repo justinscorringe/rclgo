@@ -3,6 +3,7 @@ package ros2
 // #cgo CFLAGS: -I/opt/ros/dashing/include
 // #include <rcl/rcl.h>
 // #include <stdlib.h>
+// #include <rcl/types.h>
 // // This is needed to avoid `panic: runtime error: cgo argument has Go pointer
 // // to Go pointer` when passing an `rcl_node_t*` to a C function. `rcl_node_t`
 // // contains a pointer to an `rcl_context_t` which must therefore be a C
@@ -18,7 +19,9 @@ package ros2
 // }
 import "C"
 
-import "unsafe"
+import (
+	"unsafe"
+)
 
 //
 type ROSIdlMessageTypeSupport C.rosidl_message_type_support_t
@@ -103,17 +106,7 @@ func RclShutdown(ctx RclContextPtr) int {
 type RmwMessageInfo C.rmw_message_info_t
 
 //
-func RclTake(
-	subscription *RclSubscription,
-	msg unsafe.Pointer,
-	msgInfo *RmwMessageInfo,
-) int {
-	var ret = C.rcl_take(
-		(*C.rcl_subscription_t)(subscription),
-		msg,
-		(*C.rmw_message_info_t)(msgInfo),
-		nil,
-	)
+type SerializedMsg C.rcl_serialized_message_t
 
-	return int(ret)
-}
+//
+type MsgBuffer C.rmw_subscription_allocation_t

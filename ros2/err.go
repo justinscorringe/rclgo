@@ -1,15 +1,10 @@
-package err
-
-import (
-	"github.com/justinscorringe/rclgo/ros2"
-	"github.com/justinscorringe/rclgo/types"
-)
+package ros2
 
 // Err implements the Error interface for rcl errors.
 type Err struct {
 	msg   string
-	ret   types.RCLRetT
-	state *cwrap.RcutilsErrorState
+	ret   RCLRetT
+	state *RcutilsErrorState
 }
 
 // NewErr gets the error state from rcutils and wraps it in an Err.
@@ -17,13 +12,13 @@ type Err struct {
 func NewErr(msg string, ret int) Err {
 	return Err{
 		msg:   msg,
-		ret:   types.RCLRetT(ret),
-		state: cwrap.RcutilsGetErrorState(),
+		ret:   RCLRetT(ret),
+		state: RcutilsGetErrorState(),
 	}
 }
 
 func (e Err) Error() string {
-	if e.ret == types.Ok {
+	if e.ret == Ok {
 		return e.msg
 	}
 	return e.msg + ": " + e.ret.String() + "\n" + e.state.Error()
