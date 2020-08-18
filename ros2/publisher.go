@@ -1,4 +1,4 @@
-package cwrap
+package ros2
 
 // #cgo CFLAGS: -I/opt/ros/dashing/include
 // #include "rcl/rcl.h"

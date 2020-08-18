@@ -1,7 +1,7 @@
-package cwrap
+package ros2
 
 // #cgo CFLAGS: -I/opt/ros/dashing/include
-// #cgo LDFLAGS: -L/opt/ros/dashing/lib -Wl,-rpath=/opt/ros/dashing/lib -lrcl -lrosidl_generator_c -lrosidl_typesupport_c -lstd_msgs__rosidl_generator_c -lstd_msgs__rosidl_typesupport_c
+// #cgo LDFLAGS: -L/opt/ros/dashing/lib -Wl,-rpath=/opt/ros/dashing/lib -lrcl -lrosidl_generator_c -lrosidl_typesupport_c -lstd_msgs__rosidl_generator_c -lstd_msgs__rosidl_typesupport_c -lgeometry_msgs__rosidl_generator_c -lgeometry_msgs__rosidl_typesupport_c
 // #include "msg_types.h"
 import "C"
 import "unsafe"
@@ -262,22 +262,60 @@ func GetMessageTypeFromStdMsgsMsgInt64() *ROSIdlMessageTypeSupport {
 	return (*ROSIdlMessageTypeSupport)(ret)
 }
 
+///////////
+
 type GeometryMsgs_MsgVector3 C.geometry_msgs__msg__Vector3
 
 func GetMessageTypeFromGeometryMsgsMsgVector3() *ROSIdlMessageTypeSupport {
 	var ret *C.rosidl_message_type_support_t = C.get_message_type_from_geometry_msgs_msg_Vector3()
-	return (*ROSIdlMessageTypeSpport)(ret)
+	return (*ROSIdlMessageTypeSupport)(ret)
 }
 
 func (msg *GeometryMsgs_MsgVector3) Set(data map[string]interface{}) {
-	(*C.geometry_msgs__msg__Vector3)(msg).data = (data)
+	(*C.geometry_msgs__msg__Vector3)(msg).x = data["x"].(C.double)
+	(*C.geometry_msgs__msg__Vector3)(msg).x = data["y"].(C.double)
+	(*C.geometry_msgs__msg__Vector3)(msg).x = data["z"].(C.double)
 }
 
-func (msg *GeometryMsgs_MsgVector3) GetData() MessageData {
-	return MessageData{unsafe.Pointer(msg.data)}
+//
+func InitGeometryMsgsMsgVector3() *GeometryMsgs_MsgVector3 {
+	var ret *C.geometry_msgs__msg__Vector3 = C.init_geometry_msgs_msg_Vector3()
+	return (*GeometryMsgs_MsgVector3)(ret)
 }
 
+//
+func DestroyGeometryMsgsMsgVector3(msg *GeometryMsgs_MsgVector3) {
+	cMsg := (*C.geometry_msgs__msg__Vector3)(msg)
+	C.destroy_geometry_msgs_msg_Vector3(cMsg)
 }
+
+///////////
+
+type GeometryMsgs_MsgTwist C.geometry_msgs__msg__Twist
+
+func GetMessageTypeFromGeometryMsgsMsgTwist() *ROSIdlMessageTypeSupport {
+	var ret *C.rosidl_message_type_support_t = C.get_message_type_from_geometry_msgs_msg_Twist()
+	return (*ROSIdlMessageTypeSupport)(ret)
+}
+
+func (msg *GeometryMsgs_MsgTwist) Set(data map[string]interface{}) {
+	(*C.geometry_msgs__msg__Twist)(msg).linear = data["linear"].(C.struct_geometry_msgs__msg__Vector3)
+	(*C.geometry_msgs__msg__Twist)(msg).angular = data["angular"].(C.struct_geometry_msgs__msg__Vector3)
+}
+
+//
+func InitGeometryMsgsMsgTwist() *GeometryMsgs_MsgTwist {
+	var ret *C.geometry_msgs__msg__Twist = C.init_geometry_msgs_msg_Twist()
+	return (*GeometryMsgs_MsgTwist)(ret)
+}
+
+//
+func DestroyGeometryMsgsMsgTwist(msg *GeometryMsgs_MsgTwist) {
+	cMsg := (*C.geometry_msgs__msg__Twist)(msg)
+	C.destroy_geometry_msgs_msg_Twist(cMsg)
+}
+
+///////////
 
 //
 type StdMsgs_MsgString C.std_msgs__msg__String

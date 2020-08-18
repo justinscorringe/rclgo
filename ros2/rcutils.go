@@ -1,4 +1,4 @@
-package cwrap
+package ros2
 
 // #cgo CFLAGS: -I/opt/ros/dashing/include
 // #cgo LDFLAGS: -L/opt/ros/dashing/lib -Wl,-rpath=/opt/ros/dashing/lib -lrcl -lrcutils

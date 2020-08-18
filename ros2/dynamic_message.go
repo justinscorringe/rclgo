@@ -1,33 +1,29 @@
-package ros
+package ros2
 
 // IMPORT REQUIRED PACKAGES.
 
 import (
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/buger/jsonparser"
+	"github.com/justinscorringe/rclgo/libtypes"
 	"github.com/pkg/errors"
-	libgengo "github.com/justinscorringe/rclgo/libtypes"
 )
 
 // DEFINE PUBLIC STRUCTURES.
 
-// DynamicMessageType abstracts the schema of a ROS Message whose schema is only known at runtime.  DynamicMessageTypes are created by looking up the relevant schema information from
-// ROS Message definition files.  DynamicMessageType implements the rosgo MessageType interface, allowing it to be used throughout rosgo in the same manner as message schemas generated
-// at compiletime by gengo.
 type DynamicMessageType struct {
-	spec *libgengo.MsgSpec
+	spec  *libtypes.MsgSpec         // Standard go type msg implementation
+	cSpec *ROSIdlMessageTypeSupport // C Specification msg implementation
 }
 
-// DynamicMessage abstracts an instance of a ROS Message whose type is only known at runtime.  The schema of the message is denoted by the referenced DynamicMessageType, while the
-// actual payload of the Message is stored in a map[string]interface{} which maps the name of each field to its value.  DynamicMessage implements the rosgo Message interface, allowing
-// it to be used throughout rosgo in the same manner as message types generated at compiletime by gengo.
 type DynamicMessage struct {
+	MessageBase
+
 	dynamicType *DynamicMessageType
 	data        map[string]interface{}
 }
@@ -38,9 +34,11 @@ type DynamicMessage struct {
 
 // DEFINE PRIVATE GLOBALS.
 
+const Sep = "/"
+
 var rosPkgPath string // Colon separated list of paths to search for message definitions on.
 
-var context *libgengo.MsgContext // We'll try to preserve a single message context to avoid reloading each time.
+var context *libtypes.MsgContext // We'll try to preserve a single message context to avoid reloading each time.
 
 // DEFINE PUBLIC STATIC FUNCTIONS.
 
@@ -88,7 +86,7 @@ func newDynamicMessageTypeNested(typeName string, packageName string) (*DynamicM
 	// If we haven't created a message context yet, better do that.
 	if context == nil {
 		// Create context for our ROS install.
-		c, err := libgengo.NewMsgContext(strings.Split(GetRuntimePackagePath(), ":"))
+		c, err := libtypes.NewMsgContext(strings.Split(GetRuntimePackagePath(), ":"))
 		if err != nil {
 			return nil, err
 		}
@@ -122,6 +120,8 @@ func newDynamicMessageTypeNested(typeName string, packageName string) (*DynamicM
 	// Now we know all about the message!
 	m.spec = spec
 
+	// TODO: Now we need to get the c spec of the message (rosidl)
+
 	// We've successfully made a new message type matching the requested ROS type.
 	return m, nil
 }
@@ -140,27 +140,7 @@ func (t *DynamicMessageType) Text() string {
 	return t.spec.Text
 }
 
-// MD5Sum returns the ROS compatible MD5 sum of the message type; required for ros.MessageType.
-func (t *DynamicMessageType) MD5Sum() string {
-	return t.spec.MD5Sum
-}
-
-// NewMessage creates a new DynamicMessage instantiating the message type; required for ros.MessageType.
-func (t *DynamicMessageType) NewMessage() Message {
-	// Don't instantiate messages for incomplete types.
-	if t.spec == nil {
-		return nil
-	}
-	// But otherwise, make a new one.
-	d := new(DynamicMessage)
-	d.dynamicType = t
-	var err error
-	d.data, err = zeroValueData(t.Name())
-	if err != nil {
-		return nil
-	}
-	return d
-}
+func (t *DynamicMessageType) NewMessage()
 
 // GenerateJSONSchema generates a (primitive) JSON schema for the associated DynamicMessageType; however note that since
 // we are mostly interested in making schema's for particular _topics_, the function takes a string prefix, and string topic name, which are
@@ -330,11 +310,6 @@ func (m *DynamicMessage) Data() map[string]interface{} {
 	return m.data
 }
 
-// Type returns the ROS type of a dynamic message; required for ros.Message.
-func (m *DynamicMessage) Type() MessageType {
-	return m.dynamicType
-}
-
 // MarshalJSON provides a custom implementation of JSON marshalling, so that when the DynamicMessage is recursively
 // marshalled using the standard Go json.marshal() mechanism, the resulting JSON representation is a compact representation
 // of just the important message payload (and not the message definition).  It's important that this representation matches
@@ -350,7 +325,7 @@ func (m *DynamicMessage) UnmarshalJSON(buf []byte) error {
 
 	//Delcaring temp variables to be used across the unmarshaller
 	var err error
-	var goField libgengo.Field
+	var goField libtypes.Field
 	var keyName []byte
 	var oldMsgType string
 	var msg *DynamicMessage
@@ -642,11 +617,6 @@ func (m *DynamicMessage) UnmarshalJSON(buf []byte) error {
 	//Perform JSON object handler function
 	err = jsonparser.ObjectEach(buf, objectHandler)
 	return err
-}
-
-func (m *DynamicMessage) String() string {
-	// Just print out the data!
-	return fmt.Sprint(m.dynamicType.Name(), "::", m.data)
 }
 
 // DEFINE PRIVATE STATIC FUNCTIONS.

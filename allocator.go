@@ -1,7 +1,7 @@
 package rclgo
 
 import (
-	cwrap "github.com/justinscorringe/rclgo/internal"
+	cwrap "github.com/justinscorringe/rclgo/ros2"
 )
 
 type Allocator struct {

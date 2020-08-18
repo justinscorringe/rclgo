@@ -3,19 +3,19 @@ package types
 import (
 	"unsafe"
 
-	cwrap "github.com/justinscorringe/rclgo/internal"
+	cwrap "github.com/justinscorringe/rclgo/ros2"
 )
 
 type StdMsgsString struct {
 	data *cwrap.StdMsgs_MsgString
-	StdMsgsBase
+	MessageBase
 }
 
-func (msg *StdMsgsString) GetMessage() MessageTypeSupport {
+func (msg *StdMsgsString) Type() MessageTypeSupport {
 	return msg.MsgType
 }
 
-func (msg *StdMsgsString) GetData() MessageData {
+func (msg *StdMsgsString) Data() MessageData {
 	return MessageData{unsafe.Pointer(msg.data)}
 }
 

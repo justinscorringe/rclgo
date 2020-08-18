@@ -2,7 +2,7 @@ package rclgo
 
 import (
 	"github.com/justinscorringe/rclgo/err"
-	"github.com/justinscorringe/rclgo/internal"
+	"github.com/justinscorringe/rclgo/ros2"
 	"github.com/justinscorringe/rclgo/types"
 )
 

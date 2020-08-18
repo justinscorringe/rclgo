@@ -31,7 +31,19 @@
 //////////////////////////////////////
 
 // #include <std_msgs/msg/.h>
+// #include <geometry_msgs/msg.h>
 // GET_MSG_TYPE_SUPPORT_HEADER(std_msgs,msg,)
+// GET_MSG_TYPE_SUPPORT_HEADER(geometry_msgs,msg,)
+
+#include <geometry_msgs/msg/vector3.h>
+GET_MSG_TYPE_SUPPORT_HEADER(geometry_msgs,msg,Vector3)
+CREATE_MSG_INIT_HEADER(geometry_msgs,msg,Vector3)
+CREATE_MSG_DESTROY_HEADER(geometry_msgs,msg,Vector3)
+
+#include <geometry_msgs/msg/twist.h>
+GET_MSG_TYPE_SUPPORT_HEADER(geometry_msgs,msg,Twist)
+CREATE_MSG_INIT_HEADER(geometry_msgs,msg,Twist)
+CREATE_MSG_DESTROY_HEADER(geometry_msgs,msg,Twist)
 
 #include <std_msgs/msg/bool.h>
 GET_MSG_TYPE_SUPPORT_HEADER(std_msgs,msg,Bool)

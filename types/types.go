@@ -3,7 +3,7 @@ package types
 import (
 	"unsafe"
 
-	cwrap "github.com/justinscorringe/rclgo/internal"
+	cwrap "github.com/justinscorringe/rclgo/ros2"
 )
 
 // RCLRetT is a wrapper for `rcl_ret_t` that implements the error interface.
@@ -101,22 +101,15 @@ func (r RCLRetT) String() string {
 	return "Unknown"
 }
 
-type MessageTypeSupport struct {
-	ROSIdlMessageTypeSupport *cwrap.ROSIdlMessageTypeSupport
-}
-
-type MessageData struct {
-	Data unsafe.Pointer
-}
-
 type Message interface {
-	GetMessage() MessageTypeSupport
-	GetData() MessageData
+	Type() MessageType
+	Data() unsafe.Pointer
 	InitMessage()
 	DestroyMessage()
 }
 
-type StdMsgsBase struct {
-	MsgType MessageTypeSupport
-	MsgInfo cwrap.RmwMessageInfo
+type MessageType interface {
+	NewMessage() Message
+	RosType() *cwrap.ROSIdlMessageTypeSupport
+	RosInfo() cwrap.RmwMessageInfo
 }

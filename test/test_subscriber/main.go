@@ -1,18 +1,18 @@
-package rclgo_test
+package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
-	"testing"
 	"time"
 
 	"github.com/justinscorringe/rclgo"
 	"github.com/justinscorringe/rclgo/types"
 )
 
-func TestSubscription(t *testing.T) {
+func main() {
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -31,7 +31,7 @@ func TestSubscription(t *testing.T) {
 	ctx := rclgo.NewZeroInitializedContext()
 	err := ctx.Init()
 	if err != nil {
-		t.Fatalf("rcl.Init: %s", err)
+		log.Fatalf("rcl.Init: %s", err)
 	}
 	myNode := rclgo.NewZeroInitializedNode()
 	myNodeOpts := rclgo.NewNodeDefaultOptions()
@@ -39,7 +39,7 @@ func TestSubscription(t *testing.T) {
 	fmt.Printf("Creating the node! \n")
 	err = myNode.Init("GoSubscriber", "", ctx, myNodeOpts)
 	if err != nil {
-		t.Fatalf("NodeInit: %s", err)
+		log.Fatalf("NodeInit: %s", err)
 	}
 
 	//Create the subscriptor
@@ -47,23 +47,30 @@ func TestSubscription(t *testing.T) {
 	mySubOpts := rclgo.NewSubscriptionDefaultOptions()
 
 	//Creating the type
-	msgType := types.GetMessageTypeFromGeometryMsgsMsgTwist()
+	msgType := rclgo.NewDynamicMessageType("std_msgs/String")
 
 	fmt.Printf("Creating the subscriber! \n")
-	err = mySub.Init(mySubOpts, myNode, "/myGoTopic", msgType)
+	err = mySub.Init(mySubOpts, myNode, "/myGoTopic", msgType.cSpec)
 	if err != nil {
-		t.Fatalf("SubscriptionsInit: %s", err)
+		log.Fatalf("SubscriptionsInit: %s", err)
 	}
 
 	//Creating the msg type
-	var myMsg types.GeometryMsgsVector3
+	var myMsg types.GeometryMsgsTwist
 	myMsg.InitMessage()
+
+	time.Sleep(100 * time.Millisecond)
 
 loop:
 	for {
-		err = mySub.TakeMessage(&myMsg.MsgInfo, myMsg.GetData())
+		fmt.Println("Subscriber run loop!")
+		err = mySub.TakeMessage(&myMsg.MsgInfo, myMsg.Data())
 		if err == nil {
-			fmt.Printf("(Suscriber) Received %v\n", myMsg.GetData())
+			fmt.Printf("(Suscriber) Received %v\n", myMsg.GetDataMap())
+		} else {
+			fmt.Print(err)
+			time.Sleep(100 * time.Millisecond)
+			goto loop
 		}
 
 		time.Sleep(100 * time.Millisecond)
@@ -80,16 +87,16 @@ loop:
 	myMsg.DestroyMessage()
 	err = mySub.SubscriptionFini(myNode)
 	if err != nil {
-		t.Fatalf("SubscriptionFini: %s", err)
+		log.Fatalf("SubscriptionFini: %s", err)
 	}
 
 	err = myNode.Fini()
 	if err != nil {
-		t.Fatalf("NodeFini: %s", err)
+		log.Fatalf("NodeFini: %s", err)
 	}
 
 	err = ctx.Shutdown()
 	if err != nil {
-		t.Fatalf("rcl.Shutdown: %s", err)
+		log.Fatalf("rcl.Shutdown: %s", err)
 	}
 }

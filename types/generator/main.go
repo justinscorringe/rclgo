@@ -82,11 +82,11 @@ type {{.PackageCamelCase}}{{.MsgNameCamelCase}} struct {
 	MsgType MessageTypeSupport
 }
 
-func (msg *{{.PackageCamelCase}}{{.MsgNameCamelCase}}) GetMessage() MessageTypeSupport {
+func (msg *{{.PackageCamelCase}}{{.MsgNameCamelCase}}) Type() MessageTypeSupport {
 	return msg.MsgType
 }
 
-func (msg *{{.PackageCamelCase}}{{.MsgNameCamelCase}}) GetData() MessageData {
+func (msg *{{.PackageCamelCase}}{{.MsgNameCamelCase}}) Data() MessageData {
 	return MessageData{unsafe.Pointer(msg.data)}
 }
 

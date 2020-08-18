@@ -47,14 +47,14 @@ import (
 
 // 		// fmt.Printf("Creating the publisher! \n")
 // 		//Initializing the publisher
-// 		// PublisherInit(myPub, myPubOpts, myNode, "/myGoTopic", myMsg.GetMessage())
+// 		// PublisherInit(myPub, myPubOpts, myNode, "/myGoTopic", myMsg.Type())
 
 // 		// index := 0
 
 // 		// //Update my msg
 // 		// myMsg.SetText("Greetings from GO! #" + strconv.Itoa(index))
 // 		// //Publish the message
-// 		// Publish(myPub, myMsg.GetMessage(), myMsg.GetData())
+// 		// Publish(myPub, myMsg.Type(), myMsg.Data())
 
 // 		// fmt.Printf("Shutting down!! \n")
 
@@ -107,7 +107,7 @@ func TestPublisherStringMsg(t *testing.T) {
 
 	fmt.Printf("Creating the publisher! \n")
 	//Initializing the publisher
-	err = myPub.Init(myPubOpts, myNode, "/myGoTopic", myMsg.GetMessage())
+	err = myPub.Init(myPubOpts, myNode, "/myGoTopic", myMsg.Type())
 	if err != nil {
 		t.Fatalf("PublisherInit failed: %s\n", err)
 	}
@@ -118,7 +118,7 @@ loop:
 		//Update my msg
 		myMsg.SetText("Greetings from GO! #" + strconv.Itoa(index))
 		//Publish the message
-		err := myPub.Publish(myMsg.GetMessage(), myMsg.GetData())
+		err := myPub.Publish(myMsg.Type(), myMsg.Data())
 
 		if err != nil {
 			t.Fatalf("Publish failed: %s\n", err)
@@ -193,7 +193,7 @@ loop:
 
 // 	fmt.Printf("Creating the publisher! \n")
 // 	//Initializing the publisher
-// 	PublisherInit(myPub, myPubOpts, myNode, "/myGoTopic", myMsg.GetMessage())
+// 	PublisherInit(myPub, myPubOpts, myNode, "/myGoTopic", myMsg.Type())
 
 // 	index := 0
 // loop:
@@ -202,7 +202,7 @@ loop:
 // 		myMsg.SetInt8(myMsg.GetInt8() + 1)
 
 // 		//Publish the message
-// 		retRCL := Publish(myPub, myMsg.GetMessage(), myMsg.GetData())
+// 		retRCL := Publish(myPub, myMsg.Type(), myMsg.Data())
 
 // 		if retRCL == types.Ok {
 // 			var value string
@@ -268,7 +268,7 @@ loop:
 
 // 	fmt.Printf("Creating the publisher! \n")
 // 	//Initializing the publisher
-// 	PublisherInit(myPub, myPubOpts, myNode, "/myGoTopic", myMsg.GetMessage())
+// 	PublisherInit(myPub, myPubOpts, myNode, "/myGoTopic", myMsg.Type())
 
 // 	index := 0
 // loop:
@@ -277,7 +277,7 @@ loop:
 // 		myMsg.SetFloat64(myMsg.GetFloat64() + 0.25)
 
 // 		//Publish the message
-// 		retRCL := Publish(myPub, myMsg.GetMessage(), myMsg.GetData())
+// 		retRCL := Publish(myPub, myMsg.Type(), myMsg.Data())
 
 // 		if retRCL == types.Ok {
 // 			var value string

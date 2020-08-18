@@ -1,5 +1,19 @@
 #include "msg_types.h"
 
+///////////////////////////////////////
+///// GEOMETRY MSGS
+///////////////////////////////////////////
+
+GET_MSG_TYPE_SUPPORT(geometry_msgs,msg,Vector3)
+CREATE_MSG_INIT(geometry_msgs,msg,Vector3)
+CREATE_MSG_DESTROY(geometry_msgs,msg,Vector3)
+
+///////////////////////////////////////////
+
+GET_MSG_TYPE_SUPPORT(geometry_msgs,msg,Twist)
+CREATE_MSG_INIT(geometry_msgs,msg,Twist)
+CREATE_MSG_DESTROY(geometry_msgs,msg,Twist)
+
 
 ///////////////////////////////////////
 ///// STD MSGS

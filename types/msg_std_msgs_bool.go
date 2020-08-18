@@ -3,7 +3,7 @@ package types
 import (
 	"unsafe"
 
-	cwrap "github.com/justinscorringe/rclgo/internal"
+	cwrap "github.com/justinscorringe/rclgo/ros2"
 )
 
 type StdMsgsBool struct {
@@ -11,11 +11,11 @@ type StdMsgsBool struct {
 	MsgType MessageTypeSupport
 }
 
-func (msg *StdMsgsBool) GetMessage() MessageTypeSupport {
+func (msg *StdMsgsBool) Type() MessageTypeSupport {
 	return msg.MsgType
 }
 
-func (msg *StdMsgsBool) GetData() MessageData {
+func (msg *StdMsgsBool) Data() MessageData {
 	return MessageData{unsafe.Pointer(msg.data)}
 }
 

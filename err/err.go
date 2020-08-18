@@ -1,7 +1,7 @@
 package err
 
 import (
-	"github.com/justinscorringe/rclgo/internal"
+	"github.com/justinscorringe/rclgo/ros2"
 	"github.com/justinscorringe/rclgo/types"
 )
 
