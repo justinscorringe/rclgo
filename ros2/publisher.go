@@ -12,110 +12,42 @@ type RclPublisher C.rcl_publisher_t
 type RclPublisherOptions C.rcl_publisher_options_t
 
 //
-func RclGetZeroInitializedPublisher() RclPublisher {
-	zeroPublisher := C.rcl_get_zero_initialized_publisher()
-	return RclPublisher(zeroPublisher)
-}
-
-//
-func RclPublisherGetDefaultOptions() RclPublisherOptions {
-	ret := C.rcl_publisher_get_default_options()
-	return RclPublisherOptions(ret)
-}
-
-//
-func RclPublisherGetTopicName(publisher *RclPublisher) string {
-	ret := C.rcl_publisher_get_topic_name((*C.rcl_publisher_t)(publisher))
-	return C.GoString(ret)
-}
-
-//
-func RclPublisherInit(
-	publisher *RclPublisher,
-	node *RclNode,
-	typeSupport *ROSIdlMessageTypeSupport,
-	topicName string,
-	publisherOpts *RclPublisherOptions,
-) int {
-	tName := C.CString(topicName)
-	defer C.free(unsafe.Pointer(tName))
-
-	ret := C.rcl_publisher_init(
-		(*C.rcl_publisher_t)(publisher),
-		(*C.rcl_node_t)(node),
-		(*C.rosidl_message_type_support_t)(typeSupport),
-		tName,
-		(*C.rcl_publisher_options_t)(publisherOpts),
-	)
-
-	return int(ret)
-}
-
-//
-func RclPublisherFini(publisher *RclPublisher, node *RclNode) int {
-	ret := C.rcl_publisher_fini(
-		(*C.rcl_publisher_t)(publisher),
-		(*C.rcl_node_t)(node),
-	)
-
-	return int(ret)
-}
-
-//
-func RclPublish(publisher *RclPublisher, typeSupport *ROSIdlMessageTypeSupport, data unsafe.Pointer) int {
-
-	(*C.rosidl_message_type_support_t)(typeSupport).data = data
-
-	ret := C.rcl_publish(
-		(*C.rcl_publisher_t)(publisher),
-		data,
-		nil,
-	)
-
-	return int(ret)
-}
-
-//
-func RclPublisherIsValid(publisher *RclPublisher) bool {
-	var ret C.bool = C.rcl_publisher_is_valid((*C.rcl_publisher_t)(publisher))
-	return bool(ret)
-}
-
 type Publisher struct {
 	rclPublisher *RclPublisher
 }
 
+//
 type PublisherOptions struct {
 	rclPublisherOptions *RclPublisherOptions
 }
 
 func NewZeroInitializedPublisher() Publisher {
-	zeroPublisher := RclGetZeroInitializedPublisher()
+	ret := C.rcl_get_zero_initialized_publisher()
+	zeroPublisher := RclPublisher(ret)
 	return Publisher{&zeroPublisher}
 }
 
 func NewPublisherDefaultOptions() PublisherOptions {
-	defOpts := RclPublisherGetDefaultOptions()
+	ret := C.rcl_publisher_get_default_options()
+	defOpts := RclPublisherOptions(ret)
 	return PublisherOptions{&defOpts}
 }
 
 func (p *Publisher) GetTopicName() string {
-	return RclPublisherGetTopicName(p.rclPublisher)
+	ret := C.rcl_publisher_get_topic_name((*C.rcl_publisher_t)(p.rclPublisher))
+	return C.GoString(ret)
 }
 
-func (p *Publisher) Init(
-	publisherOptions PublisherOptions,
-	node Node,
-	topicName string,
-	msg MessageType,
-) error {
+func (p *Publisher) Init(publisherOptions PublisherOptions, node Node, topicName string, msg MessageType) error {
+	tName := C.CString(topicName)
+	defer C.free(unsafe.Pointer(tName))
 
-	ret := RclPublisherInit(
-		p.rclPublisher,
-		node.rclNode,
-		msg.RosType(),
-		topicName,
-		publisherOptions.rclPublisherOptions,
+	ret := C.rcl_publisher_init(
+		(*C.rcl_publisher_t)(p.rclPublisher),
+		(*C.rcl_node_t)(node.rclNode),
+		(*C.rosidl_message_type_support_t)(msg.RosType()),
+		tName,
+		(*C.rcl_publisher_options_t)(publisherOptions.rclPublisherOptions),
 	)
 
 	if ret != Ok {
@@ -126,9 +58,13 @@ func (p *Publisher) Init(
 }
 
 func (p *Publisher) PublisherFini(node Node) error {
-	ret := RclPublisherFini(p.rclPublisher, node.rclNode)
+
+	ret := C.rcl_publisher_fini(
+		(*C.rcl_publisher_t)(p.rclPublisher),
+		(*C.rcl_node_t)(node.rclNode),
+	)
 	if ret != Ok {
-		return NewErr("RclPublisherFini", ret)
+		return NewErr("RclPublisherFini", int(ret))
 	}
 
 	return nil
@@ -136,19 +72,39 @@ func (p *Publisher) PublisherFini(node Node) error {
 
 func (p *Publisher) Publish(msg Message) error {
 
-	// ret := RclPublish(
-	// 	p.rclPublisher,
-	// 	msg.ROSIdlMessageTypeSupport,
-	// 	data.Data,
+	//(*C.rosidl_message_type_support_t)(typeSupport).data = data
+
+	ret := C.rcl_publish(
+		(*C.rcl_publisher_t)(p.rclPublisher),
+		msg.RosData(),
+		nil,
+	)
+
+	if ret != Ok {
+		return NewErr("RclPublish", int(ret))
+	}
+
+	return nil
+}
+
+func (p *Publisher) PublishRaw(msg Message) error {
+
+	//(*C.rosidl_message_type_support_t)(typeSupport).data = data
+
+	// ret := C.rcl_publish_serialized_message(
+	// 	(*C.rcl_publisher_t)(p.rclPublisher),
+	// 	msg.RosData(),
+	// 	nil,
 	// )
 
 	// if ret != Ok {
-	// 	return NewErr("RclPublish", ret)
+	// 	return NewErr("RclPublish", int(ret))
 	// }
 
 	return nil
 }
 
 func (p *Publisher) IsValid() bool {
-	return RclPublisherIsValid(p.rclPublisher)
+	var ret C.bool = C.rcl_publisher_is_valid((*C.rcl_publisher_t)(p.rclPublisher))
+	return bool(ret)
 }

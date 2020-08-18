@@ -67,7 +67,7 @@ func main() {
 loop:
 	for {
 		fmt.Println("Subscriber run loop!")
-		msg, err := mySub.TakeMessageSerialized(msgType)
+		msg, err := mySub.TakeMessageRaw(msgType)
 		if err == nil {
 			fmt.Printf("(Suscriber) Received %v\n", msg)
 			i = 0

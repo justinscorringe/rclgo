@@ -9,6 +9,10 @@ import (
 	"fmt"
 )
 
+type Allocator struct {
+	rclAllocator *RclAllocator
+}
+
 type RcutilsErrorState struct {
 	msg  string
 	file string
@@ -45,12 +49,14 @@ func RcutilsGetErrorState() *RcutilsErrorState {
 	return &ret
 }
 
-func RcutilsGetZeroInitializedAllocator() RclAllocator {
+func NewZeroInitializedAllocator() Allocator {
 	ret := C.rcutils_get_zero_initialized_allocator()
-	return RclAllocator(ret)
+	zeroAllocator := RclAllocator(ret)
+	return Allocator{&zeroAllocator}
 }
 
-func RcutilsGetDefaultAllocator() RclAllocator {
+func NewDefaultAllocator() Allocator {
 	ret := C.rcutils_get_default_allocator()
-	return RclAllocator(ret)
+	defAllocator := RclAllocator(ret)
+	return Allocator{&defAllocator}
 }

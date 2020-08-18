@@ -73,7 +73,7 @@ func (s *Subscription) SubscriptionFini(node Node) error {
 }
 
 //
-func (s *Subscription) TakeMessageSerialized(msgType MessageType) (Message, error) {
+func (s *Subscription) TakeMessageRaw(msgType MessageType) (Message, error) {
 	if msgType == nil || s.rclSubscription == nil {
 		return nil, NewErr("nil", Error)
 	}
