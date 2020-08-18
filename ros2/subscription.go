@@ -15,97 +15,58 @@ type RclSubscription C.rcl_subscription_t
 type RclSubscriptionOptions C.rcl_subscription_options_t
 
 //
-func RclGetZeroInitializedSubscription() RclSubscription {
-	var ret C.rcl_subscription_t = C.rcl_get_zero_initialized_subscription()
-	return RclSubscription(ret)
-}
-
-//
-func RclSubscriptionInit(
-	subscription *RclSubscription,
-	node *RclNode,
-	typeSupport *ROSIdlMessageTypeSupport,
-	topicName string,
-	options *RclSubscriptionOptions,
-) int {
-
-	cTopicName := C.CString(topicName)
-	defer C.free(unsafe.Pointer(cTopicName))
-
-	var ret C.int32_t = C.rcl_subscription_init(
-		(*C.rcl_subscription_t)(subscription),
-		(*C.struct_rcl_node_t)(node),
-		(*C.rosidl_message_type_support_t)(typeSupport),
-		cTopicName,
-		(*C.rcl_subscription_options_t)(options),
-	)
-
-	return int(ret)
-}
-
-//
-func RclSubscriptionFini(subscription *RclSubscription, node *RclNode) int {
-	var ret C.int32_t = C.rcl_subscription_fini(
-		(*C.rcl_subscription_t)(subscription),
-		(*C.rcl_node_t)(node),
-	)
-	return int(ret)
-}
-
-//
-func RclSubscriptionGetDefaultOptions() RclSubscriptionOptions {
-	var ret C.rcl_subscription_options_t = C.rcl_subscription_get_default_options()
-	return RclSubscriptionOptions(ret)
-}
-
 type Subscription struct {
 	rclSubscription *RclSubscription
 }
 
+//
 type SubscriptionOptions struct {
 	rclSubscriptionOptions *RclSubscriptionOptions
 }
 
 func NewZeroInitializedSubscription() Subscription {
-	zeroSubscription := RclGetZeroInitializedSubscription()
+	var ret C.rcl_subscription_t = C.rcl_get_zero_initialized_subscription()
+	zeroSubscription := RclSubscription(ret)
 	return Subscription{&zeroSubscription}
 }
 
 func NewSubscriptionDefaultOptions() SubscriptionOptions {
-	defOpts := RclSubscriptionGetDefaultOptions()
+	var ret C.rcl_subscription_options_t = C.rcl_subscription_get_default_options()
+	defOpts := RclSubscriptionOptions(ret)
 	return SubscriptionOptions{&defOpts}
 }
 
-func (s *Subscription) Init(
-	subscriptionOptions SubscriptionOptions,
-	node Node,
-	topicName string,
-	msg MessageType,
-) error {
+//
+func (s *Subscription) Init(subscriptionOptions SubscriptionOptions, node Node, topicName string, msg MessageType) error {
 
-	ret := RclSubscriptionInit(
-		s.rclSubscription,
-		node.rclNode,
-		msg.RosType(),
-		topicName,
-		subscriptionOptions.rclSubscriptionOptions,
+	cTopicName := C.CString(topicName)
+	defer C.free(unsafe.Pointer(cTopicName))
+
+	var ret C.int32_t = C.rcl_subscription_init(
+		(*C.rcl_subscription_t)(s.rclSubscription),
+		(*C.struct_rcl_node_t)(node.rclNode),
+		(*C.rosidl_message_type_support_t)(msg.RosType()),
+		cTopicName,
+		(*C.rcl_subscription_options_t)(subscriptionOptions.rclSubscriptionOptions),
 	)
 
 	if ret != Ok {
-		return NewErr("RclSubscriptionInit", ret)
+		return NewErr("RclSubscriptionInit", int(ret))
 	}
 
 	return nil
 }
 
+//
 func (s *Subscription) SubscriptionFini(node Node) error {
-	ret := RclSubscriptionFini(
-		s.rclSubscription,
-		node.rclNode,
+
+	var ret C.int32_t = C.rcl_subscription_fini(
+		(*C.rcl_subscription_t)(s.rclSubscription),
+		(*C.rcl_node_t)(node.rclNode),
 	)
 
 	if ret != Ok {
-		return NewErr("RclSubscriptionFini", ret)
+		return NewErr("RclSubscriptionFini", int(ret))
 	}
 
 	return nil
