@@ -72,7 +72,7 @@ loop:
 			fmt.Printf("(Suscriber) Received %v\n", msg)
 			i = 0
 		} else {
-			fmt.Print(err)
+			fmt.Println(err)
 			time.Sleep(100 * time.Millisecond)
 			if i > 10 {
 				log.Fatal("dead")

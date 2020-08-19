@@ -5,6 +5,7 @@ package ros2
 import "C"
 
 import (
+	"bytes"
 	"unsafe"
 )
 
@@ -84,11 +85,11 @@ func (s *Subscription) TakeMessageRaw(msgType MessageType) (Message, error) {
 		return nil, NewErr("nil", Error)
 	}
 
-	msgRawBytes := NewRawMessage()
+	msgEvent := NewRawMessage()
 
 	ret := C.rcl_take_serialized_message(
 		(*C.rcl_subscription_t)(s.rclSubscription),
-		(*C.rmw_serialized_message_t)(&msgRawBytes),
+		(*C.rmw_serialized_message_t)(&msgEvent),
 		(*C.rmw_message_info_t)(msgType.RosInfo()),
 		nil)
 
@@ -97,6 +98,11 @@ func (s *Subscription) TakeMessageRaw(msgType MessageType) (Message, error) {
 	}
 
 	msg := msgType.NewMessage()
+	reader := bytes.NewReader(*(*[]byte)(unsafe.Pointer(&msgEvent.buffer)))
+	err := msg.Deserialize(reader)
+	if err != nil {
+		return nil, err
+	}
 
 	return msg, nil
 }
