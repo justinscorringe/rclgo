@@ -103,7 +103,7 @@ func (r RCLRetT) String() string {
 type Message interface {
 	Type() MessageType
 	RosData() unsafe.Pointer
-	Deserialize(buf *bytes.Reader) error
+	Deserialize(buf *bytes.Reader, length int) error
 	//InitMessage()
 	//DestroyMessage()
 }

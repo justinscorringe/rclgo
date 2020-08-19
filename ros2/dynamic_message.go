@@ -659,7 +659,7 @@ func (m *DynamicMessage) UnmarshalJSON(buf []byte) error {
 	return err
 }
 
-func (m *DynamicMessage) Deserialize(buf *bytes.Reader) error {
+func (m *DynamicMessage) Deserialize(buf *bytes.Reader, length int) error {
 	// THIS METHOD IS BASICALLY AN UNTEMPLATED COPY OF THE TEMPLATE IN LIBGENGO.
 
 	// To give more sane results in the event of a decoding issue, we decode into a copy of the data field.
@@ -812,7 +812,7 @@ func (m *DynamicMessage) Deserialize(buf *bytes.Reader) error {
 						return errors.Wrap(err, "Field: "+field.Name)
 					}
 					msg := msgType.NewMessage()
-					if err = msg.Deserialize(buf); err != nil {
+					if err = msg.Deserialize(buf, 0); err != nil {
 						return errors.Wrap(err, "Field: "+field.Name)
 					}
 					tmpData[field.Name] = append(tmpData[field.Name].([]Message), msg)
@@ -824,13 +824,14 @@ func (m *DynamicMessage) Deserialize(buf *bytes.Reader) error {
 			if field.IsBuiltin {
 				if field.Type == "string" {
 					// The string will start with a declaration of the number of characters.
-					var strSize uint32
-					if err = binary.Read(buf, binary.LittleEndian, &strSize); err != nil {
-						return errors.Wrap(err, "length Field: "+field.Name)
-					}
-					data := make([]byte, int(strSize))
+					// var strSize uint32
+
+					// if err = binary.Read(buf, binary.LittleEndian, &strSize); err != nil {
+					// 	return errors.Wrap(err, "length Field: "+field.Name)
+					// }
+					data := make([]byte, length)
+
 					if err = binary.Read(buf, binary.LittleEndian, data); err != nil {
-						//fmt.Printf("buf: %v   length of str: %v\n", buf, strSize)
 						return errors.Wrap(err, "field Field: "+field.Name)
 					}
 					tmpData[field.Name] = string(data)
@@ -916,7 +917,7 @@ func (m *DynamicMessage) Deserialize(buf *bytes.Reader) error {
 					return errors.Wrap(err, "Field: "+field.Name)
 				}
 				tmpData[field.Name] = msgType.NewMessage()
-				if err = tmpData[field.Name].(Message).Deserialize(buf); err != nil {
+				if err = tmpData[field.Name].(Message).Deserialize(buf, length); err != nil {
 					return errors.Wrap(err, "Field: "+field.Name)
 				}
 			}

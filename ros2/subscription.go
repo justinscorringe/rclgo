@@ -6,6 +6,7 @@ import "C"
 
 import (
 	"bytes"
+	"fmt"
 	"unsafe"
 )
 
@@ -98,8 +99,11 @@ func (s *Subscription) TakeMessageRaw(msgType MessageType) (Message, error) {
 	}
 
 	msg := msgType.NewMessage()
-	reader := bytes.NewReader(*(*[]byte)(unsafe.Pointer(&msgEvent.buffer)))
-	err := msg.Deserialize(reader)
+
+	buf := (*[]byte)(unsafe.Pointer(&msgEvent.buffer))
+	fmt.Printf("length of buffer: %v    buffer: %s\n", msgEvent.buffer_length, buf)
+	reader := bytes.NewReader(*buf)
+	err := msg.Deserialize(reader, int(msgEvent.buffer_length))
 	if err != nil {
 		return nil, err
 	}

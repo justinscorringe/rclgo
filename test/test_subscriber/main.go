@@ -69,7 +69,7 @@ loop:
 		fmt.Println("Subscriber run loop!")
 		msg, err := mySub.TakeMessageRaw(msgType)
 		if err == nil {
-			fmt.Printf("(Suscriber) Received %v\n", msg)
+			fmt.Printf("(Suscriber) Received %v\n", msg.(*rclgo.DynamicMessage).Data())
 			i = 0
 		} else {
 			fmt.Println(err)
