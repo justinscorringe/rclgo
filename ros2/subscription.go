@@ -72,17 +72,23 @@ func (s *Subscription) SubscriptionFini(node Node) error {
 	return nil
 }
 
+func NewRawMessage() SerializedMsg {
+	ret := C.rmw_serialized_message_t{}
+	ret.allocator = C.rcutils_get_default_allocator()
+	return SerializedMsg(ret)
+}
+
 //
 func (s *Subscription) TakeMessageRaw(msgType MessageType) (Message, error) {
 	if msgType == nil || s.rclSubscription == nil {
 		return nil, NewErr("nil", Error)
 	}
 
-	msgRawBytes := SerializedMsg{}
+	msgRawBytes := NewRawMessage()
 
 	ret := C.rcl_take_serialized_message(
 		(*C.rcl_subscription_t)(s.rclSubscription),
-		(*C.rcl_serialized_message_t)(&msgRawBytes),
+		(*C.rmw_serialized_message_t)(&msgRawBytes),
 		(*C.rmw_message_info_t)(msgType.RosInfo()),
 		nil)
 
