@@ -3,8 +3,9 @@ package ros2
 // IMPORT REQUIRED PACKAGES.
 
 // #cgo CFLAGS: -I/opt/ros/dashing/include
-// #cgo LDFLAGS: -L/opt/ros/dashing/lib -Wl,-rpath=/opt/ros/dashing/lib -lrcl -lrosidl_generator_c -lrosidl_typesupport_c -lstd_msgs__rosidl_generator_c -lstd_msgs__rosidl_typesupport_c
-// #include "generic_type.h"
+// #cgo CXXFLAGS: -I/usr/lib/ -I/opt/ros/dashing/include
+// #cgo LDFLAGS: -L/opt/ros/dashing/lib -Wl,-rpath=/opt/ros/dashing/lib -lrcl -lrosidl_generator_c -lrosidl_typesupport_c -lstd_msgs__rosidl_generator_c -lstd_msgs__rosidl_typesupport_c -lrosidl_typesupport_introspection_c -lrosidl_typesupport_introspection_cpp
+// #include "generic_type_support.hpp"
 // #include "rosidl_generator_c/message_type_support_struct.h"
 import "C"
 
@@ -165,6 +166,7 @@ func (t *DynamicMessageType) NewMessage() Message {
 
 func (t *DynamicMessageType) RosType() *ROSIdlMessageTypeSupport {
 	var ret *C.rosidl_message_type_support_t = C.get_generic_type()
+	//ret.typesupport_identifier = C.rosidl_typesupport_introspection_c__identifier
 	return (*ROSIdlMessageTypeSupport)(ret)
 }
 

@@ -104,8 +104,6 @@ type Message interface {
 	Type() MessageType
 	RosData() unsafe.Pointer
 	Deserialize(buf *bytes.Reader, length int) error
-	//InitMessage()
-	//DestroyMessage()
 }
 
 type MessageType interface {
