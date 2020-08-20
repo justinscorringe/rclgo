@@ -52,7 +52,7 @@ func main() {
 	}
 
 	fmt.Printf("Creating the subscriber! \n")
-	err = mySub.Init(mySubOpts, myNode, "/myGoTopic", msgType)
+	err = mySub.Init(mySubOpts, myNode, "/myTopic", msgType)
 	if err != nil {
 		log.Fatalf("SubscriptionsInit: %s", err)
 	}

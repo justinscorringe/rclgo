@@ -2,6 +2,9 @@ package ros2
 
 // #cgo CFLAGS: -I/opt/ros/dashing/include
 // #include <rcl/rcl.h>
+// #include <rmw/rmw.h>
+// #include <rmw/error_handling.h>
+// #include <rmw/validate_full_topic_name.h>
 import "C"
 
 import (
@@ -51,6 +54,8 @@ func (s *Subscription) Init(subscriptionOptions SubscriptionOptions, node Node, 
 		cTopicName,
 		(*C.rcl_subscription_options_t)(subscriptionOptions.rclSubscriptionOptions),
 	)
+
+	//,
 
 	if ret != Ok {
 		return NewErr("RclSubscriptionInit", int(ret))

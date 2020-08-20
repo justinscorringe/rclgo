@@ -4,7 +4,8 @@ package ros2
 
 // #cgo CFLAGS: -I/opt/ros/dashing/include
 // #cgo LDFLAGS: -L/opt/ros/dashing/lib -Wl,-rpath=/opt/ros/dashing/lib -lrcl -lrosidl_generator_c -lrosidl_typesupport_c -lstd_msgs__rosidl_generator_c -lstd_msgs__rosidl_typesupport_c
-// #include "msg_types.h"
+// #include "generic_type.h"
+// #include "rosidl_generator_c/message_type_support_struct.h"
 import "C"
 
 import (
@@ -163,12 +164,12 @@ func (t *DynamicMessageType) NewMessage() Message {
 }
 
 func (t *DynamicMessageType) RosType() *ROSIdlMessageTypeSupport {
-	var ret *C.rosidl_message_type_support_t = C.get_message_type_from_std_msgs_msg_String()
+	var ret *C.rosidl_message_type_support_t = C.get_generic_type()
 	return (*ROSIdlMessageTypeSupport)(ret)
 }
 
 func (t *DynamicMessageType) RosInfo() *RmwMessageInfo {
-	// Hardcoded to one type right now
+	// Hardcoded to no type right now
 	return &RmwMessageInfo{}
 }
 
