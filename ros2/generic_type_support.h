@@ -1,3 +1,7 @@
+#ifndef GENERIC_TYPE_SUPPORT_H
+#define GENERIC_TYPE_SUPPORT_H
+
+
 #include "rosidl_generator_c/message_type_support_struct.h"
 #include "rosidl_typesupport_interface/macros.h"
 #include "rosidl_typesupport_introspection_cpp/visibility_control.h"
@@ -8,3 +12,4 @@ ROSIDL_TYPESUPPORT_INTROSPECTION_CPP_PUBLIC
 const rosidl_message_type_support_t *
   get_generic_type();
 
+#endif // GENERIC_TYPE_SUPPORT_H

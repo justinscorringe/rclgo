@@ -2,6 +2,7 @@
 // with input from std_msgs:msg/String.idl
 // generated code does not contain a copyright notice
 
+#include "stdio.h"
 #include "array"
 #include "cstddef"
 #include "string"
@@ -73,6 +74,7 @@ ROSIDL_TYPESUPPORT_INTROSPECTION_CPP_PUBLIC
 const rosidl_message_type_support_t *
 get_message_type_support_handle<std_msgs::msg::String>()
 {
+  printf("%s\n", "Getting generic type support handler!");
   return &::std_msgs::msg::rosidl_typesupport_introspection_cpp::String_message_type_support_handle;
 }
 
@@ -86,7 +88,8 @@ extern "C"
 ROSIDL_TYPESUPPORT_INTROSPECTION_CPP_PUBLIC
 const rosidl_message_type_support_t *
 get_generic_type() {
-  return &::std_msgs::msg::rosidl_typesupport_introspection_cpp::String_message_type_support_handle;
+  printf("%s\n", "Go fetching generic type support!");
+    return &::std_msgs::msg::rosidl_typesupport_introspection_cpp::String_message_type_support_handle;
 }
 
 #ifdef __cplusplus
