@@ -1,6 +1,6 @@
 package ros2
 
-// #cgo CFLAGS: -I/opt/ros/dashing/include
+// #cgo CFLAGS: -I/opt/ros/eloquent/include
 // #include <rcl/rcl.h>
 // #include <rmw/rmw.h>
 // #include <rmw/error_handling.h>

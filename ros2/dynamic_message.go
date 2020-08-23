@@ -2,11 +2,10 @@ package ros2
 
 // IMPORT REQUIRED PACKAGES.
 
-// #cgo CFLAGS: -I/opt/ros/dashing/include
-// #cgo CXXFLAGS: -I/usr/lib/ -I/opt/ros/dashing/include
-// #cgo LDFLAGS: -L/usr/lib/ -L/opt/ros/dashing/include -Wl,-rpath=/opt/ros/dashing/include -lrcl -lrcutils -lstdc++ -lrosidl_generator_c -lrosidl_typesupport_c -lstd_msgs__rosidl_generator_c -lstd_msgs__rosidl_typesupport_c -lrosidl_typesupport_introspection_c -lrosidl_typesupport_introspection_cpp -lrosidl_typesupport_cpp
+// #cgo CFLAGS: -I/opt/ros/eloquent/include
+// #cgo CXXFLAGS: -I/usr/lib/ -I/opt/ros/eloquent/include
+// #cgo LDFLAGS: -L/usr/lib/ -L/opt/ros/eloquent/include -Wl,-rpath=/opt/ros/eloquent/include -lrcl -lrcutils -lstdc++ -lrosidl_generator_c -lrosidl_typesupport_c -lstd_msgs__rosidl_generator_c -lstd_msgs__rosidl_typesupport_c -lrosidl_typesupport_introspection_c -lrosidl_typesupport_introspection_cpp -lrosidl_typesupport_cpp
 // #include "generic_type.h"
-// #include "generic__struct.h"
 // #include "rosidl_generator_c/message_type_support_struct.h"
 import "C"
 
@@ -26,13 +25,13 @@ import (
 
 // DEFINE PUBLIC STRUCTURES.
 
-type GenericMessage C.Generic
+type GenericMessage *C.struct_Generic
 
-func (gm GenericMessage) GetData() string {
-	var d C.rosidl_generator_c__String = (C.Generic(gm)).data
-	var c *C.char = d.data
-	return C.GoString(c)
-}
+// func (gm GenericMessage) GetData() string {
+// 	var d C.rosidl_generator_c__String = (C.Generic(gm)).data
+// 	var c *C.char = d.data
+// 	return C.GoString(c)
+// }
 
 type DynamicMessageType struct {
 	spec    *libtypes.MsgSpec         // Standard go type msg implementation
@@ -184,7 +183,8 @@ func (t *DynamicMessageType) NewMessage() Message {
 	d.dynamicType = t
 
 	// allocate ros messageC.rcutils_get_default_allocator()
-	d.rosData = GenericMessage(C.Generic{})
+	genericMsg := C.Generic__create()
+	d.rosData = GenericMessage(genericMsg)
 
 	// create go data
 	var err error
