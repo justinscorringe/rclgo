@@ -4,8 +4,9 @@ package ros2
 
 // #cgo CFLAGS: -I/opt/ros/dashing/include
 // #cgo CXXFLAGS: -I/usr/lib/ -I/opt/ros/dashing/include
-// #cgo LDFLAGS: -L/usr/lib/ -L/opt/ros/dashing/include -Wl,-rpath=/opt/ros/dashing/include -lrcl -lstdc++ -lrosidl_generator_c -lrosidl_typesupport_c -lstd_msgs__rosidl_generator_c -lstd_msgs__rosidl_typesupport_c -lrosidl_typesupport_introspection_c -lrosidl_typesupport_introspection_cpp -lrosidl_typesupport_cpp
-// #include "generic_type_support.hpp"
+// #cgo LDFLAGS: -L/usr/lib/ -L/opt/ros/dashing/include -Wl,-rpath=/opt/ros/dashing/include -lrcl -lrcutils -lstdc++ -lrosidl_generator_c -lrosidl_typesupport_c -lstd_msgs__rosidl_generator_c -lstd_msgs__rosidl_typesupport_c -lrosidl_typesupport_introspection_c -lrosidl_typesupport_introspection_cpp -lrosidl_typesupport_cpp
+// #include "generic_type.h"
+// #include "generic__struct.h"
 // #include "rosidl_generator_c/message_type_support_struct.h"
 import "C"
 
@@ -17,7 +18,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"unsafe"
 
 	"github.com/buger/jsonparser"
 	"github.com/justinscorringe/rclgo/libtypes"
@@ -26,14 +26,23 @@ import (
 
 // DEFINE PUBLIC STRUCTURES.
 
+type GenericMessage C.Generic
+
+func (gm GenericMessage) GetData() string {
+	var d C.rosidl_generator_c__String = (C.Generic(gm)).data
+	var c *C.char = d.data
+	return C.GoString(c)
+}
+
 type DynamicMessageType struct {
-	spec  *libtypes.MsgSpec         // Standard go type msg implementation
-	cSpec *ROSIdlMessageTypeSupport // C Specification msg implementation
+	spec    *libtypes.MsgSpec         // Standard go type msg implementation
+	rosType *ROSIdlMessageTypeSupport // C Specification msg implementation
 }
 
 type DynamicMessage struct {
 	dynamicType *DynamicMessageType
 	data        map[string]interface{}
+	rosData     GenericMessage
 }
 
 // DEFINE PRIVATE STRUCTURES.
@@ -141,7 +150,9 @@ func newDynamicMessageTypeNested(typeName string, packageName string) (*DynamicM
 	// Now we know all about the message!
 	m.spec = spec
 
-	// TODO: Now we need to get the c spec of the message (rosidl)
+	// Get the c spec of the message (rosidl)
+	var ret *C.rosidl_message_type_support_t = C.get_generic_type()
+	m.rosType = (*ROSIdlMessageTypeSupport)(ret)
 
 	// We've successfully made a new message type matching the requested ROS type.
 	return m, nil
@@ -162,13 +173,20 @@ func (t *DynamicMessageType) Text() string {
 }
 
 func (t *DynamicMessageType) NewMessage() Message {
-	// Don't instantiate messages for incomplete types.
+
+	// don't instantiate messages for incomplete types.
 	if t.spec == nil {
 		return nil
 	}
-	// But otherwise, make a new one.
+
+	// otherwise, instantiate a message
 	d := new(DynamicMessage)
 	d.dynamicType = t
+
+	// allocate ros messageC.rcutils_get_default_allocator()
+	d.rosData = GenericMessage(C.Generic{})
+
+	// create go data
 	var err error
 	d.data, err = zeroValueData(t.Name())
 	if err != nil {
@@ -178,8 +196,7 @@ func (t *DynamicMessageType) NewMessage() Message {
 }
 
 func (t *DynamicMessageType) RosType() *ROSIdlMessageTypeSupport {
-	var ret *C.rosidl_message_type_support_t = C.get_generic_type()
-	return (*ROSIdlMessageTypeSupport)(ret)
+	return t.rosType
 }
 
 func (t *DynamicMessageType) RosInfo() *RmwMessageInfo {
@@ -350,19 +367,19 @@ func (t *DynamicMessageType) generateJSONSchemaProperties(topic string) (map[str
 
 //	DynamicMessage
 
-// Data returns the data map field of the DynamicMessage
+// Data returns the golang data map field of the DynamicMessage
 func (m *DynamicMessage) Data() map[string]interface{} {
 	return m.data
 }
 
-// Data returns the data map field of the DynamicMessage
+// Type returns the message type of the DynamicMessage
 func (m *DynamicMessage) Type() MessageType {
 	return m.dynamicType
 }
 
-// Data returns the data pointer of the ros C message
-func (m *DynamicMessage) RosData() unsafe.Pointer {
-	return nil
+// Data returns the data pointer of the ros message data
+func (m *DynamicMessage) RosMessage() GenericMessage {
+	return m.rosData
 }
 
 // MarshalJSON provides a custom implementation of JSON marshalling, so that when the DynamicMessage is recursively

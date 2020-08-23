@@ -58,9 +58,34 @@ func main() {
 		log.Fatalf("SubscriptionsInit: %s", err)
 	}
 
-	// //Creating the msg type
-	// var myMsg types.GeometryMsgsTwist
-	// myMsg.InitMessage()
+	// Create wait set
+	ctxPtr := rclgo.GetZeroInitializedContextPtr()
+	initOpts := rclgo.RclGetZeroInitializedInitOptions()
+	alloc := rclgo.RclGetDefaultAllocator()
+
+	rclgo.RclInitOptionsInit(&initOpts, alloc)
+
+	ret := rclgo.RclInit(0, nil, &initOpts, ctxPtr)
+	if ret != 0 {
+		log.Fatalf("RclInit: %v", rclgo.NewErr("", ret))
+
+	}
+
+	waitSet := rclgo.NewZeroInitializedWaitSet()
+
+	err = waitSet.WaitSetInit(1, 0, 0, 0, 0, 0, ctxPtr, alloc)
+	if err != nil {
+		log.Fatalf("WaitSetInit: %s", err)
+	}
+
+	waitSet.WaitSetClearSubscriptions()
+
+	//var index uint64
+
+	err = waitSet.WaitSetAddsubscription(mySub)
+	if err != nil {
+		log.Fatalf("WaitAddSub: %s", err)
+	}
 
 	time.Sleep(100 * time.Millisecond)
 	i := 0
@@ -68,9 +93,15 @@ func main() {
 loop:
 	for {
 		fmt.Println("Subscriber run loop!")
-		msg, err := mySub.TakeMessageRaw(msgType)
+
+		msg := msgType.NewMessage()
+
+		//msg := rclgo.GenericMessage{}
+
+		err := mySub.TakeMessage(msg)
 		if err == nil {
-			fmt.Printf("(Suscriber) Received %v\n", msg.(*rclgo.DynamicMessage).Data())
+			fmt.Printf("(Suscriber) Received %v\n", msg.RosMessage().GetData())
+			time.Sleep(100 * time.Millisecond)
 			i = 0
 		} else {
 			fmt.Println(err)

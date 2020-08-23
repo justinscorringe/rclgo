@@ -1,7 +1,3 @@
-// generated from rosidl_typesupport_introspection_cpp/resource/idl__type_support.cpp.em
-// with input from std_msgs:msg/String.idl
-// generated code does not contain a copyright notice
-
 #include "stdio.h"
 #include "array"
 #include "cstddef"
@@ -12,12 +8,13 @@
 #include "rosidl_typesupport_cpp/message_type_support_dispatch.hpp"
 #include "rosidl_typesupport_interface/macros.h"
 #include "generic__struct.hpp"
+#include "rcutils/allocator.h"
 #include "rosidl_typesupport_introspection_cpp/field_types.hpp"
 #include "rosidl_typesupport_introspection_cpp/identifier.hpp"
 #include "rosidl_typesupport_introspection_cpp/message_introspection.hpp"
 #include "rosidl_typesupport_introspection_cpp/message_type_support_decl.hpp"
 #include "rosidl_typesupport_introspection_cpp/visibility_control.h"
-#include "generic_type_support.hpp"
+#include "generic_type_support.h"
 
 namespace custom_msgs
 {
@@ -87,6 +84,10 @@ get_generic_type() {
   printf("%s\n", "Go fetching generic type support!");
     return &::custom_msgs::rosidl_typesupport_introspection_cpp::Generic_message_type_support_handle;
 }
+
+// void init_generic_type() {
+//   return Generic{};
+// }
 
 #ifdef __cplusplus
 }

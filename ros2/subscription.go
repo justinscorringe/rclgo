@@ -118,13 +118,17 @@ func (s *Subscription) TakeMessageRaw(msgType MessageType) (Message, error) {
 
 //
 func (s *Subscription) TakeMessage(msg Message) error {
-	if msg == nil || s.rclSubscription == nil {
+	if s.rclSubscription == nil {
 		return NewErr("nil", Error)
 	}
+
+	rosMessage := msg.RosMessage()
+
 	var ret = C.rcl_take(
 		(*C.rcl_subscription_t)(s.rclSubscription),
-		msg.RosData(),
-		(*C.rmw_message_info_t)(msg.Type().RosInfo()),
+		unsafe.Pointer(&rosMessage),
+		//(*C.rmw_message_info_t)(msg.Type().RosInfo()),
+		nil,
 		nil,
 	)
 

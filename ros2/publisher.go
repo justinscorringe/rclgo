@@ -74,9 +74,11 @@ func (p *Publisher) Publish(msg Message) error {
 
 	//(*C.rosidl_message_type_support_t)(typeSupport).data = data
 
+	rosMessage := msg.RosMessage()
+
 	ret := C.rcl_publish(
 		(*C.rcl_publisher_t)(p.rclPublisher),
-		msg.RosData(),
+		unsafe.Pointer(&rosMessage),
 		nil,
 	)
 
@@ -93,7 +95,7 @@ func (p *Publisher) PublishRaw(msg Message) error {
 
 	// ret := C.rcl_publish_serialized_message(
 	// 	(*C.rcl_publisher_t)(p.rclPublisher),
-	// 	msg.RosData(),
+	// 	msg.RosMessage(),
 	// 	nil,
 	// )
 

@@ -91,7 +91,7 @@ struct Generic_
   {
     return !this->operator==(other);
   }
-};  // struct String_
+};  // struct Generic_
 
 // alias to use template instance with default allocator
 using Generic =
