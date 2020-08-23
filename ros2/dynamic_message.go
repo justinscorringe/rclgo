@@ -4,7 +4,7 @@ package ros2
 
 // #cgo CFLAGS: -I/opt/ros/dashing/include
 // #cgo CXXFLAGS: -I/usr/lib/ -I/opt/ros/dashing/include
-// #cgo LDFLAGS: -L/usr/lib/ -L/opt/ros/dashing/lib -Wl,-rpath=/opt/ros/dashing/lib -lrcl -lstdc++ -lrosidl_generator_c -lrosidl_typesupport_c -lstd_msgs__rosidl_generator_c -lstd_msgs__rosidl_typesupport_c -lrosidl_typesupport_introspection_c -lrosidl_typesupport_introspection_cpp
+// #cgo LDFLAGS: -L/usr/lib/ -L/opt/ros/dashing/include -Wl,-rpath=/opt/ros/dashing/include -lrcl -lstdc++ -lrosidl_generator_c -lrosidl_typesupport_c -lstd_msgs__rosidl_generator_c -lstd_msgs__rosidl_typesupport_c -lrosidl_typesupport_introspection_c -lrosidl_typesupport_introspection_cpp -lrosidl_typesupport_cpp
 // #include "generic_type_support.hpp"
 // #include "rosidl_generator_c/message_type_support_struct.h"
 import "C"
@@ -45,6 +45,7 @@ type DynamicMessage struct {
 const Sep = "/"
 
 var rosPkgPath string // Colon separated list of paths to search for message definitions on.
+var rmwImpl string    // Rmw implementation for the RCL package to use
 
 var context *libtypes.MsgContext // We'll try to preserve a single message context to avoid reloading each time.
 
@@ -56,6 +57,14 @@ func SetRuntimePackagePath(path string) {
 	rosPkgPath = path
 	// Reset the message context
 	ResetContext()
+	// All done.
+	return
+}
+
+// SetRmwImplemenation sets the ROS package search path which will be used by DynamicMessage to look up ROS message definitions at runtime.
+func SetRmwImplementation(rmw string) {
+	// We're not going to check that the result is valid, we'll just accept it blindly.
+	os.Setenv("RMW_IMPLEMENTATION", rmw)
 	// All done.
 	return
 }
@@ -100,6 +109,10 @@ func newDynamicMessageTypeNested(typeName string, packageName string) (*DynamicM
 		}
 		context = c
 	}
+
+	// We need to set the rmw implementation to dynamic
+	SetRmwImplementation("rmw_fastrtps_dynamic_cpp")
+	// Note: This requires deb package installation : ros-<distro>-rmw-fastrtps-dynamic-cpp
 
 	// We need to try to look up the full name, in case we've just been given a short name.
 	fullname := typeName

@@ -32,6 +32,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("rcl.Init: %s", err)
 	}
+
 	myNode := rclgo.NewZeroInitializedNode()
 	myNodeOpts := rclgo.NewNodeDefaultOptions()
 
