@@ -1,7 +1,11 @@
 package ros2
 
+// #include "generic_type.h"
+import "C"
+
 import (
 	"bytes"
+	"unsafe"
 )
 
 // RCLRetT is a wrapper for `rcl_ret_t` that implements the error interface.
@@ -101,12 +105,12 @@ func (r RCLRetT) String() string {
 
 type Message interface {
 	Type() MessageType
-	RosMessage() GenericMessage
+	RosMessage() unsafe.Pointer
 	Deserialize(buf *bytes.Reader, length int) error
 }
 
 type MessageType interface {
 	NewMessage() Message
-	RosType() *ROSIdlMessageTypeSupport
+	RosType() *C.struct_rosidl_message_type_support_t
 	RosInfo() *RmwMessageInfo
 }

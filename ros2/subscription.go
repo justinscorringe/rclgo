@@ -126,7 +126,7 @@ func (s *Subscription) TakeMessage(msg Message) error {
 
 	var ret = C.rcl_take(
 		(*C.rcl_subscription_t)(s.rclSubscription),
-		unsafe.Pointer(&rosMessage),
+		rosMessage,
 		//(*C.rmw_message_info_t)(msg.Type().RosInfo()),
 		nil,
 		nil,

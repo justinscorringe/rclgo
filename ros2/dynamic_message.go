@@ -6,6 +6,8 @@ package ros2
 // #cgo CXXFLAGS: -I/usr/lib/ -I/opt/ros/eloquent/include
 // #cgo LDFLAGS: -L/usr/lib/ -L/opt/ros/eloquent/include -Wl,-rpath=/opt/ros/eloquent/include -lrcl -lrcutils -lstdc++ -lrosidl_generator_c -lrosidl_typesupport_c -lstd_msgs__rosidl_generator_c -lstd_msgs__rosidl_typesupport_c -lrosidl_typesupport_introspection_c -lrosidl_typesupport_introspection_cpp -lrosidl_typesupport_cpp
 // #include "generic_type.h"
+// #include <stdlib.h>
+// #include "rosidl_typesupport_introspection_c/field_types.h"
 // #include "rosidl_generator_c/message_type_support_struct.h"
 import "C"
 
@@ -14,9 +16,11 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
+	"unsafe"
 
 	"github.com/buger/jsonparser"
 	"github.com/justinscorringe/rclgo/libtypes"
@@ -25,24 +29,22 @@ import (
 
 // DEFINE PUBLIC STRUCTURES.
 
-type GenericMessage *C.struct_Generic
-
-// func (gm GenericMessage) GetData() string {
-// 	var d C.rosidl_generator_c__String = (C.Generic(gm)).data
-// 	var c *C.char = d.data
-// 	return C.GoString(c)
-// }
-
 type DynamicMessageType struct {
-	spec    *libtypes.MsgSpec         // Standard go type msg implementation
-	rosType *ROSIdlMessageTypeSupport // C Specification msg implementation
+	spec    *libtypes.MsgSpec                       // Standard go type msg implementation
+	rosType *C.struct_rosidl_message_type_support_t // C Specification msg implementation
 }
 
 type DynamicMessage struct {
 	dynamicType *DynamicMessageType
 	data        map[string]interface{}
-	rosData     GenericMessage
+	rosData     unsafe.Pointer
 }
+
+// func (m *DynamicMessage) GetData() string {
+// 	var d C.rosidl_generator_c__String = (m.rosData).data
+// 	var c *C.char = d.data
+// 	return C.GoString(c)
+// }
 
 // DEFINE PRIVATE STRUCTURES.
 
@@ -150,8 +152,17 @@ func newDynamicMessageTypeNested(typeName string, packageName string) (*DynamicM
 	m.spec = spec
 
 	// Get the c spec of the message (rosidl)
-	var ret *C.rosidl_message_type_support_t = C.get_generic_type()
-	m.rosType = (*ROSIdlMessageTypeSupport)(ret)
+	cPackage := C.CString(fmt.Sprintf("%s__msg", spec.Package))
+	defer C.free(unsafe.Pointer(cPackage))
+	cMessage := C.CString(spec.ShortName)
+	defer C.free(unsafe.Pointer(cMessage))
+	_ = C.uint32_t(len(spec.Fields))
+
+	// Generate members
+	_ = generateMembers(spec.Fields)
+
+	//var ret *C.rosidl_message_type_support_t = C.new_generic_type(cPackage, cMessage, cLength)
+	m.rosType = C.get_generic_type()
 
 	// We've successfully made a new message type matching the requested ROS type.
 	return m, nil
@@ -182,9 +193,8 @@ func (t *DynamicMessageType) NewMessage() Message {
 	d := new(DynamicMessage)
 	d.dynamicType = t
 
-	// allocate ros messageC.rcutils_get_default_allocator()
-	genericMsg := C.Generic__create()
-	d.rosData = GenericMessage(genericMsg)
+	// allocate ros message
+	d.rosData = unsafe.Pointer(C.Generic__create())
 
 	// create go data
 	var err error
@@ -195,7 +205,7 @@ func (t *DynamicMessageType) NewMessage() Message {
 	return d
 }
 
-func (t *DynamicMessageType) RosType() *ROSIdlMessageTypeSupport {
+func (t *DynamicMessageType) RosType() *C.struct_rosidl_message_type_support_t {
 	return t.rosType
 }
 
@@ -378,7 +388,7 @@ func (m *DynamicMessage) Type() MessageType {
 }
 
 // Data returns the data pointer of the ros message data
-func (m *DynamicMessage) RosMessage() GenericMessage {
+func (m *DynamicMessage) RosMessage() unsafe.Pointer {
 	return m.rosData
 }
 
@@ -1106,6 +1116,67 @@ func zeroValueData(s string) (map[string]interface{}, error) {
 		}
 	}
 	return d, err
+}
+
+// generateMembers creates the rosidl introspection message members for a new message type
+func generateMembers(fields []libtypes.Field) []C.GoMember {
+
+	members := make([]C.GoMember, 0)
+	for _, field := range fields {
+
+		// Create a gold member
+		member := C.GoMember{}
+
+		// Name of field
+		memberName := C.CString(field.Name)
+		defer C.free(unsafe.Pointer(memberName))
+
+		// Array information
+		member.is_array_ = C.bool(field.IsArray)
+		member.array_size_ = C.size_t(field.ArrayLen)
+
+		switch field.Type {
+		case "int8":
+			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_INT8
+		case "uint8":
+			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_UINT8
+		case "int16":
+			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_INT16
+		case "uint16":
+			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_UINT16
+		case "int32":
+			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_INT32
+		case "uint32":
+			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_UINT32
+		case "int64":
+			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_INT64
+		case "uint64":
+			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_UINT64
+		case "float32":
+			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT32
+		case "float64":
+			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT64
+		case "string":
+			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_STRING
+		case "bool":
+			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_BOOL
+		case "char":
+			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_CHAR
+		case "byte":
+			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_BYTE
+		// Note: Time and Duration are builtin MESSAGE types
+		default:
+			// We need to generated nested fields
+			msgType, _ := newDynamicMessageTypeNested(field.Type, field.Package)
+
+			// Member field takes a typesupport definition
+			member.members_ = msgType.rosType
+		}
+
+		members = append(members, member)
+	}
+
+	return members
 }
 
 // DEFINE PRIVATE STATIC FUNCTIONS.

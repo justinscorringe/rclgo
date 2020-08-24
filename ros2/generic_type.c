@@ -30,6 +30,12 @@ static rosidl_typesupport_introspection_c__MessageMember Generic__rosidl_typesup
   }
 };
 
+const rosidl_typesupport_introspection_c__MessageMember new_generic_members(GoMember[] go_members_) {
+  // Create full member spec above from go members
+
+  // Create size, get_const, get, and resize  function interfaces also.
+}
+
 static const rosidl_typesupport_introspection_c__MessageMembers Generic__rosidl_typesupport_introspection_c__Generic_message_members = {
   "std_msgs__msg",  // message namespace
   "String",  // message name
@@ -37,6 +43,37 @@ static const rosidl_typesupport_introspection_c__MessageMembers Generic__rosidl_
   sizeof(Generic),
   Generic__rosidl_typesupport_introspection_c__Generic_message_member_array  // message members
 };
+
+// Create a generic type support
+const rosidl_message_type_support_t new_generic_type(
+  const char* message_namespace_, 
+  const char* message_name_, 
+  uint32_t member_count_,
+  GoMember go_members_[])
+  {
+
+  // Create introspection message members from go members
+  const rosidl_typesupport_introspection_c__MessageMember = new_generic_members(go_members_);
+
+  // Create introspection members object
+    const rosidl_typesupport_introspection_c__MessageMembers members = {
+  message_namespace_,
+  message_name_,
+  member_count_,
+  sizeof(Generic),
+  Generic__rosidl_typesupport_introspection_c__Generic_message_member_array 
+  //void (* init_function)(void *, enum rosidl_runtime_c_message_initialization);
+  //void (* fini_function)(void *);
+  };
+
+  const rosidl_message_type_support_t generic_type = {
+  rosidl_typesupport_introspection_c__identifier,
+  &members,
+  get_message_typesupport_handle_function
+  };
+
+  return generic_type;
+}
 
 // this is not const since it must be initialized on first access
 // since C does not allow non-integral compile-time constants
@@ -47,13 +84,13 @@ static rosidl_message_type_support_t Generic__rosidl_typesupport_introspection_c
 };
 
 // Create generic type
-const rosidl_message_type_support_t * 
-get_generic_type() 
-{
+const rosidl_message_type_support_t *
+get_generic_type() {
   if (!Generic__rosidl_typesupport_introspection_c__Generic_message_type_support_handle.typesupport_identifier) {
    Generic__rosidl_typesupport_introspection_c__Generic_message_type_support_handle.typesupport_identifier =
      rosidl_typesupport_introspection_c__identifier;
- }return &Generic__rosidl_typesupport_introspection_c__Generic_message_type_support_handle;
+ }
+ return &Generic__rosidl_typesupport_introspection_c__Generic_message_type_support_handle;
 }
 
 // Functions for Generic type

@@ -100,7 +100,7 @@ loop:
 
 		err := mySub.TakeMessage(msg)
 		if err == nil {
-			fmt.Printf("(Suscriber) Received %v\n", msg.RosMessage())
+			fmt.Printf("(Suscriber) Received %s\n", msg.RosMessage())
 			time.Sleep(100 * time.Millisecond)
 			i = 0
 		} else {
