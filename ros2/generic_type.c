@@ -12,23 +12,9 @@
 // Member `data`
 #include "rosidl_generator_c/string_functions.h"
 
-static rosidl_typesupport_introspection_c__MessageMember Generic__rosidl_typesupport_introspection_c__Generic_message_member_array[1] = {
-  {
-    "data",  // name
-    rosidl_typesupport_introspection_c__ROS_TYPE_STRING,  // type
-    0,  // upper bound of string
-    NULL,  // members of sub message
-    false,  // is array
-    0,  // array size
-    false,  // is upper bound
-    offsetof(Generic, data),  // bytes offset in struct
-    NULL,  // default value
-    NULL,  // size() function pointer
-    NULL,  // get_const(index) function pointer
-    NULL,  // get(index) function pointer
-    NULL  // resize(index) function pointer
-  }
-};
+/////////////////////////////
+// Generic type generation //
+/////////////////////////////
 
 const rosidl_typesupport_introspection_c__MessageMember * new_generic_members(GoMember go_members_[], uint32_t member_count_) {
   rosidl_typesupport_introspection_c__MessageMember* new_member_array = malloc(member_count_ * sizeof *new_member_array);
@@ -60,10 +46,11 @@ const rosidl_typesupport_introspection_c__MessageMember * new_generic_members(Go
   return new_member_array;
 }
 
-const GoMembers new_generic_struct(GoMember go_members_[], size_t member_count_) {
+const GoMembers * new_generic_struct(GoMember go_members_[], size_t member_count_) {
   // Generate size of struct and offset values with padding
 
   int32_t largest_member_ = 0;
+
   // Find size of largest member (built in non array :( )
   for (uint32_t i = 0; i < member_count_; i++) {
 
@@ -99,6 +86,10 @@ const GoMembers new_generic_struct(GoMember go_members_[], size_t member_count_)
     } else if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_UINT64) {
       if (sizeof(uint64_t) > largest_member_) {
         largest_member_ = sizeof(uint64_t);
+      }
+    } else if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE) {
+      if (sizeof(double) > largest_member_) {
+        largest_member_ = sizeof(double);
       }
     } else if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT32) {
       if (sizeof(float) > largest_member_) {
@@ -140,43 +131,38 @@ const GoMembers new_generic_struct(GoMember go_members_[], size_t member_count_)
   // Calculate size 
   size_t struct_size_ = largest_member_ * member_count_;
 
-  GoMembers members;
+  GoMembers * members;
   
-  members.member_array = go_members_;
-  members.struct_size_ = struct_size_;
+  members->member_array = go_members_;
+  members->struct_size_ = struct_size_;
 
   return members;
 
 }
 
-static const rosidl_typesupport_introspection_c__MessageMembers Generic__rosidl_typesupport_introspection_c__Generic_message_members = {
-  "std_msgs__msg",  // message namespace
-  "String",  // message name
-  1,  // number of fields
-  sizeof(Generic),
-  Generic__rosidl_typesupport_introspection_c__Generic_message_member_array  // message members
-};
+///////////////////////////////
+// Create a new Generic type //
+///////////////////////////////
 
-// Create a generic type support
 const rosidl_message_type_support_t new_generic_type(
   const char* message_namespace_, 
   const char* message_name_, 
   uint32_t member_count_,
-  GoMember go_members_[])
+  GoMembers * go_members_)
   {
 
   // Create struct size and offsets   
-  const GoMembers members_ = new_generic_struct(go_members_, member_count_);
+  const GoMembers * members_ = new_generic_struct(go_members_->member_array, member_count_);
 
   // Create introspection message members from go members
-  const rosidl_typesupport_introspection_c__MessageMember * member_array_ = new_generic_members(members_.member_array, member_count_);
+  const rosidl_typesupport_introspection_c__MessageMember * member_array_ = new_generic_members(members_->member_array, member_count_);
  
   // Create introspection members object
     const rosidl_typesupport_introspection_c__MessageMembers members = {
   message_namespace_,
   message_name_,
   member_count_,
-  members_.struct_size_,
+  members_->struct_size_,
   member_array_
   //void (* init_function)(void *, enum rosidl_runtime_c_message_initialization);
   //void (* fini_function)(void *);
@@ -191,25 +177,9 @@ const rosidl_message_type_support_t new_generic_type(
   return generic_type;
 }
 
-// this is not const since it must be initialized on first access
-// since C does not allow non-integral compile-time constants
-static rosidl_message_type_support_t Generic__rosidl_typesupport_introspection_c__Generic_message_type_support_handle = {
-  0,
-  &Generic__rosidl_typesupport_introspection_c__Generic_message_members,
-  get_message_typesupport_handle_function,
-};
-
-// Create generic type
-const rosidl_message_type_support_t *
-get_generic_type() {
-  if (!Generic__rosidl_typesupport_introspection_c__Generic_message_type_support_handle.typesupport_identifier) {
-   Generic__rosidl_typesupport_introspection_c__Generic_message_type_support_handle.typesupport_identifier =
-     rosidl_typesupport_introspection_c__identifier;
- }
- return &Generic__rosidl_typesupport_introspection_c__Generic_message_type_support_handle;
-}
-
-// Functions for Generic type
+////////////////////////////////
+// Functions for Generic type //
+////////////////////////////////
 
 bool Generic__init(Generic * msg)
 {
@@ -233,31 +203,16 @@ void Generic__fini(Generic * msg)
   //rosidl_generator_c__String__fini(&msg->data);
 }
 
-Generic * Generic__create()
-{
-  Generic * msg = (Generic *)malloc(sizeof(Generic));
-  if (!msg) {
-    return NULL;
-  }
-  memset(msg, 0, sizeof(Generic));
-  bool success = Generic__init(msg);
-  if (!success) {
-    free(msg);
-    return NULL;
-  }
-  return msg;
-}
-
-Generic * Generic__create__dynamic(GoMember go_members_[], size_t member_count_)
+Generic * Generic__create(GoMembers * go_members_, uint32_t member_count_)
 {
   // Create struct size and offsets   
-  const GoMembers members_ = new_generic_struct(go_members_, member_count_);
+  const GoMembers * members_ = new_generic_struct(go_members_->member_array, member_count_);
 
-  Generic * msg = (Generic *)malloc(members_.struct_size_);
+  Generic * msg = (Generic *)malloc(members_->struct_size_);
   if (!msg) {
     return NULL;
   }
-  memset(msg, 0, members_.struct_size_);
+  memset(msg, 0, members_->struct_size_);
   bool success = Generic__init(msg);
   if (!success) {
     free(msg);
@@ -265,7 +220,6 @@ Generic * Generic__create__dynamic(GoMember go_members_[], size_t member_count_)
   }
   return msg;
 }
-
 
 void Generic__destroy(Generic * msg)
 {

@@ -32,7 +32,7 @@ import (
 type DynamicMessageType struct {
 	spec    *libtypes.MsgSpec                       // Standard go type msg implementation
 	rosType *C.struct_rosidl_message_type_support_t // C Specification msg implementation
-	members []C.GoMember
+	members *C.GoMembers
 }
 
 type DynamicMessage struct {
@@ -157,13 +157,13 @@ func newDynamicMessageTypeNested(typeName string, packageName string) (*DynamicM
 	defer C.free(unsafe.Pointer(cPackage))
 	cMessage := C.CString(spec.ShortName)
 	defer C.free(unsafe.Pointer(cMessage))
-	_ = C.uint32_t(len(spec.Fields))
+	cLength := C.uint32_t(len(spec.Fields))
 
 	// Generate members
 	m.members = generateMembers(spec.Fields)
 
-	//var ret *C.rosidl_message_type_support_t = C.new_generic_type(cPackage, cMessage, cLength)
-	m.rosType = C.get_generic_type()
+	var ret C.rosidl_message_type_support_t = C.new_generic_type(cPackage, cMessage, cLength, m.members) // Dynamic
+	m.rosType = &ret
 
 	// We've successfully made a new message type matching the requested ROS type.
 	return m, nil
@@ -195,8 +195,8 @@ func (t *DynamicMessageType) NewMessage() Message {
 	d.dynamicType = t
 
 	// allocate ros message
-	//d.rosData = unsafe.Pointer(C.Generic__create__dynamic(t.members, C.uint32_t(len(t.members))))
-	d.rosData = unsafe.Pointer(C.Generic__create())
+	d.rosData = unsafe.Pointer(C.Generic__create(t.members, C.uint32_t(len(t.spec.Fields))))
+	//d.rosData = unsafe.Pointer(C.Generic__create())
 
 	// create go data
 	var err error
@@ -1121,12 +1121,12 @@ func zeroValueData(s string) (map[string]interface{}, error) {
 }
 
 // generateMembers creates the rosidl introspection message members for a new message type
-func generateMembers(fields []libtypes.Field) []C.GoMember {
+func generateMembers(fields []libtypes.Field) *C.GoMembers {
 
-	members := make([]C.GoMember, 0)
+	memberArray := make([]C.GoMember, 0)
 	for _, field := range fields {
 
-		// Create a gold member
+		// Create a go member
 		member := C.GoMember{}
 
 		// Name of field
@@ -1157,7 +1157,7 @@ func generateMembers(fields []libtypes.Field) []C.GoMember {
 		case "float32":
 			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT32
 		case "float64":
-			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT64
+			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE
 		case "string":
 			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_STRING
 		case "bool":
@@ -1175,10 +1175,14 @@ func generateMembers(fields []libtypes.Field) []C.GoMember {
 			member.members_ = msgType.rosType
 		}
 
-		members = append(members, member)
+		memberArray = append(memberArray, member)
 	}
 
-	return members
+	members := C.GoMembers{}
+
+	members.member_array = memberArray
+
+	return &members
 }
 
 // DEFINE PRIVATE STATIC FUNCTIONS.
