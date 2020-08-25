@@ -86,7 +86,7 @@ func NewRawMessage() SerializedMsg {
 }
 
 //
-func (s *Subscription) TakeMessageRaw(msgType MessageType) (Message, error) {
+func (s *Subscription) TakeRawMessage(msgType MessageType) (Message, error) {
 	if msgType == nil || s.rclSubscription == nil {
 		return nil, NewErr("nil", Error)
 	}
@@ -106,7 +106,7 @@ func (s *Subscription) TakeMessageRaw(msgType MessageType) (Message, error) {
 	msg := msgType.NewMessage()
 
 	buf := (*[]byte)(unsafe.Pointer(&msgEvent.buffer))
-	fmt.Printf("length of buffer: %v    buffer: %s\n", msgEvent.buffer_length, buf)
+	fmt.Printf("length of buffer: %v    buffer: %s    msgEvent: %s\n", msgEvent.buffer_length, buf, msgEvent)
 	reader := bytes.NewReader(*buf)
 	err := msg.Deserialize(reader, int(msgEvent.buffer_length))
 	if err != nil {

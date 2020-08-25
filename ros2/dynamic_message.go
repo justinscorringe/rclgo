@@ -1168,7 +1168,7 @@ func generateMembers(fields []libtypes.Field) []C.GoMember {
 		default:
 			// We need to generated nested fields
 			msgType, _ := newDynamicMessageTypeNested(field.Type, field.Package)
-
+			member.type_id_ = C.rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE
 			// Member field takes a typesupport definition
 			member.members_ = msgType.rosType
 		}

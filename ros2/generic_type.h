@@ -18,10 +18,10 @@ typedef struct GoMember
   const char * name_;
   uint8_t type_id_;
   const rosidl_message_type_support_t * members_;
+  size_t member_offset_;
   bool is_array_;
   size_t array_size_;
 } GoMember;
-
 
 const rosidl_message_type_support_t
   new_generic_type(const char* message_namespace_, 
@@ -39,6 +39,12 @@ typedef struct Generic
 {
   rosidl_generator_c__String data;
 } Generic;
+
+typedef struct GoMembers
+{
+  size_t struct_size_;
+  GoMember * member_array;
+} GoMembers;
 
 // Message functions
 

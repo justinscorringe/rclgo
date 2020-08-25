@@ -30,10 +30,123 @@ static rosidl_typesupport_introspection_c__MessageMember Generic__rosidl_typesup
   }
 };
 
-const rosidl_typesupport_introspection_c__MessageMember new_generic_members(GoMember[] go_members_) {
+const rosidl_typesupport_introspection_c__MessageMember * new_generic_members(GoMember go_members_[], uint32_t member_count_) {
+  rosidl_typesupport_introspection_c__MessageMember* new_member_array = malloc(member_count_ * sizeof *new_member_array);
+  
   // Create full member spec above from go members
+  for (uint32_t i = 0; i < member_count_; i++) {
 
+    GoMember goMember = go_members_[i];
+
+     // Start with primitive non-arrays
+    if ((goMember.is_array_ == false) && (goMember.type_id_ != rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE)) {
+      new_member_array[i].name_ = goMember.name_; // name
+      new_member_array[i].type_id_ =  goMember.type_id_;  // type
+      new_member_array[i].string_upper_bound_ = 0;  // upper bound of string
+      new_member_array[i].members_ = NULL;  // members of sub message
+      new_member_array[i].is_array_ = false;  // is array
+      new_member_array[i].array_size_ = 0;  // array size
+      new_member_array[i].is_upper_bound_ = false;  // is upper bound
+      new_member_array[i].offset_ = goMember.member_offset_;  // bytes offset in struct
+      new_member_array[i].default_value_ = NULL;  // default value
+      // new_member_array[i].(* size_function)(const void *) = NULL;  // size() function pointer
+      // new_member_array[i].(*get_const_function)(const void *, size_t index) = NULL;  // get_const(index) function pointer
+      // new_member_array[i].(*get_function)(void *, size_t index) = NULL;  // get(index) function pointer
+      // new_member_array[i].(* resize_function)(void *, size_t size) = NULL;  // resize(index) function pointer
+       }
+    }
   // Create size, get_const, get, and resize  function interfaces also.
+
+  return new_member_array;
+}
+
+const GoMembers new_generic_struct(GoMember go_members_[], size_t member_count_) {
+  // Generate size of struct and offset values with padding
+
+  int32_t largest_member_ = 0;
+  // Find size of largest member (built in non array :( )
+  for (uint32_t i = 0; i < member_count_; i++) {
+
+    GoMember member = go_members_[i];
+    if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_INT8) {
+      if (sizeof(int8_t) > largest_member_) {
+        largest_member_ = sizeof(int8_t);
+      }
+    } else if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_INT16) {
+      if (sizeof(int16_t) > largest_member_) {
+        largest_member_ = sizeof(int16_t);
+      }
+    } else if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_INT32) {
+      if (sizeof(int32_t) > largest_member_) {
+        largest_member_ = sizeof(int32_t);
+      }
+    } else if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_INT64) {
+      if (sizeof(int64_t) > largest_member_) {
+        largest_member_ = sizeof(int64_t);
+      }
+    } else if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_UINT8) {
+      if (sizeof(uint8_t) > largest_member_) {
+        largest_member_ = sizeof(uint8_t);
+      }
+    } else if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_UINT16) {
+      if (sizeof(uint16_t) > largest_member_) {
+        largest_member_ = sizeof(uint16_t);
+      }
+    } else if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_UINT32) {
+      if (sizeof(uint32_t) > largest_member_) {
+        largest_member_ = sizeof(uint32_t);
+      }
+    } else if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_UINT64) {
+      if (sizeof(uint64_t) > largest_member_) {
+        largest_member_ = sizeof(uint64_t);
+      }
+    } else if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT32) {
+      if (sizeof(float) > largest_member_) {
+        largest_member_ = sizeof(float);
+      }
+    } else if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT64) {
+      if (sizeof(float) > largest_member_) {
+        largest_member_ = sizeof(float);
+      }
+    } else if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_STRING) {
+      if (sizeof(rosidl_generator_c__String) > largest_member_) {
+        largest_member_ = sizeof(rosidl_generator_c__String);
+      }
+    } else if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_BOOL) {
+      if (sizeof(bool) > largest_member_) {
+        largest_member_ = sizeof(bool);
+      }
+    } else if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_CHAR) {
+      if (sizeof(char) > largest_member_) {
+        largest_member_ = sizeof(char);
+      }
+    } else if (member.type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_BYTE) {
+      if (sizeof(char) > largest_member_) {
+        largest_member_ = sizeof(char);
+      }
+    }
+    
+
+  }
+
+  // Calculate offset of each value
+  for (uint32_t i = 0; i < member_count_; i++) {
+
+    GoMember member = go_members_[i];
+
+    member.member_offset_ = (i * largest_member_);
+  }
+
+  // Calculate size 
+  size_t struct_size_ = largest_member_ * member_count_;
+
+  GoMembers members;
+  
+  members.member_array = go_members_;
+  members.struct_size_ = struct_size_;
+
+  return members;
+
 }
 
 static const rosidl_typesupport_introspection_c__MessageMembers Generic__rosidl_typesupport_introspection_c__Generic_message_members = {
@@ -52,16 +165,19 @@ const rosidl_message_type_support_t new_generic_type(
   GoMember go_members_[])
   {
 
-  // Create introspection message members from go members
-  const rosidl_typesupport_introspection_c__MessageMember = new_generic_members(go_members_);
+  // Create struct size and offsets   
+  const GoMembers members_ = new_generic_struct(go_members_, member_count_);
 
+  // Create introspection message members from go members
+  const rosidl_typesupport_introspection_c__MessageMember * member_array_ = new_generic_members(members_.member_array, member_count_);
+ 
   // Create introspection members object
     const rosidl_typesupport_introspection_c__MessageMembers members = {
   message_namespace_,
   message_name_,
   member_count_,
-  sizeof(Generic),
-  Generic__rosidl_typesupport_introspection_c__Generic_message_member_array 
+  members_.struct_size_,
+  member_array_
   //void (* init_function)(void *, enum rosidl_runtime_c_message_initialization);
   //void (* fini_function)(void *);
   };
