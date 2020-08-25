@@ -215,12 +215,12 @@ bool Generic__init(Generic * msg)
 {
   if (!msg) {
     return false;
-  }
-  // data
-  if (!rosidl_generator_c__String__init(&msg->data)) {
-    Generic__fini(msg);
-    return false;
-  }
+   }
+  // // data
+  // if (!rosidl_generator_c__String__init(&msg->data)) {
+  //   Generic__fini(msg);
+  //   return false;
+  // }
   return true;
 }
 
@@ -230,7 +230,7 @@ void Generic__fini(Generic * msg)
     return;
   }
   // data
-  rosidl_generator_c__String__fini(&msg->data);
+  //rosidl_generator_c__String__fini(&msg->data);
 }
 
 Generic * Generic__create()
@@ -247,6 +247,25 @@ Generic * Generic__create()
   }
   return msg;
 }
+
+Generic * Generic__create__dynamic(GoMember go_members_[], size_t member_count_)
+{
+  // Create struct size and offsets   
+  const GoMembers members_ = new_generic_struct(go_members_, member_count_);
+
+  Generic * msg = (Generic *)malloc(members_.struct_size_);
+  if (!msg) {
+    return NULL;
+  }
+  memset(msg, 0, members_.struct_size_);
+  bool success = Generic__init(msg);
+  if (!success) {
+    free(msg);
+    return NULL;
+  }
+  return msg;
+}
+
 
 void Generic__destroy(Generic * msg)
 {

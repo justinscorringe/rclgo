@@ -32,6 +32,7 @@ import (
 type DynamicMessageType struct {
 	spec    *libtypes.MsgSpec                       // Standard go type msg implementation
 	rosType *C.struct_rosidl_message_type_support_t // C Specification msg implementation
+	members []C.GoMember
 }
 
 type DynamicMessage struct {
@@ -159,7 +160,7 @@ func newDynamicMessageTypeNested(typeName string, packageName string) (*DynamicM
 	_ = C.uint32_t(len(spec.Fields))
 
 	// Generate members
-	_ = generateMembers(spec.Fields)
+	m.members = generateMembers(spec.Fields)
 
 	//var ret *C.rosidl_message_type_support_t = C.new_generic_type(cPackage, cMessage, cLength)
 	m.rosType = C.get_generic_type()
@@ -194,6 +195,7 @@ func (t *DynamicMessageType) NewMessage() Message {
 	d.dynamicType = t
 
 	// allocate ros message
+	//d.rosData = unsafe.Pointer(C.Generic__create__dynamic(t.members, C.uint32_t(len(t.members))))
 	d.rosData = unsafe.Pointer(C.Generic__create())
 
 	// create go data

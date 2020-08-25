@@ -57,6 +57,9 @@ void Generic__fini(Generic * msg);
 // Create
 Generic * Generic__create();
 
+// Create dynamic
+Generic * Generic__create__dynamic(GoMember go_members_[], size_t member_count_);
+
 // Destroy
 void Generic__destroy(Generic * msg);
 
